@@ -1,4 +1,6 @@
 import { FaInstagram, FaFacebookF, FaTwitter } from 'react-icons/fa';
+import React from 'react';
+// import 'aceternity-ui/smooth-scroll.css'; // Import smooth scroll
 
 const Footer = () => {
   return (
@@ -6,7 +8,8 @@ const Footer = () => {
       <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
         <div className="mb-6 md:mb-0">
           <h2 className="text-lg font-semibold mb-2">About Us</h2>
-          <p className="text-sm mb-4">Contact Us</p>
+          <p className="link link-hover text-sm mb-4">Contact Us</p>
+          <a href="#jobs" className="link link-hover smooth-scroll text-sm mb-4">Jobs</a>
         </div>
         <div className="text-center md:text-right">
           <h1 className="text-2xl font-bold mb-4">Home Ease</h1>
