@@ -55,7 +55,7 @@ export default function VendorInfoPage() {
     e.preventDefault();
     try {
       const response = await fetch(`${process.env.API_URL}api/vendors/${authUser._id}`, {
-        method: 'PUT',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
