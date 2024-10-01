@@ -5,7 +5,7 @@ import Footer from '@/components/Footer';
 export default function HomePage1() {
   return (
     <div>
-      <Header />
+     
       <main className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-semibold mb-6">Home Services at your Doorstep</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -40,7 +40,7 @@ export default function HomePage1() {
           </div>
         </div>
       </main>
-      <Footer />
+      
     </div>
   );
 }
