@@ -1,110 +1,91 @@
 
 
-// import { useRouter } from 'next/router';
-// import Image from 'next/image';
-// import React from 'react';
-
-// const VendorPage = () => {
-//   const router = useRouter();
-//   const { slug } = router.query; // Extract the slug from the URL
-//   const { image } = router.query; // Extract the image query parameter
-
-//   return (
-//     <div className="h-screen">
-//       {/* Banner Section */}
-//       <div className="bg-red-950 h-60 flex justify-center items-center">
-//         {image ? (
-//           <img
-//             src={image}
-//             alt={slug}
-//             className="h-full w-full object-cover"
-//           />
-//         ) : (
-//           <p className="text-white text-2xl">No Image Available</p>
-//         )}
-//       </div>
-
-//       {/* Content Section */}
-//       <div className="mt-6 mb-5">
-//         <a className="text-4xl font-sans subpixel-antialiased font-bold ml-10">
-//           Available vendors for {slug?.replace(/-/g, ' ')}
-//         </a>
-//       </div>
-
-//       <div className="border-t-2 border-black mb-8" />
-//       <div className="flex flex-col items-center">
-//         <div className="flex flex-row h-64 w-11/12 bg-slate-950 justify-between">
-//           <div className="h-56 w-56 bg-slate-600">hey</div>
-//           <div className="h-56 w-56 bg-slate-600">hey</div>
-//           <div className="h-56 w-56 bg-slate-600">hey</div>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default VendorPage;
-
 import { useRouter } from 'next/router';
-import Image from 'next/image';
 import React, { useEffect, useState } from 'react';
 
 const VendorPage = () => {
   const router = useRouter();
-  const { slug } = router.query; // Extract the slug from the URL
-  const { image } = router.query; // Extract the image query parameter
-  const [vendors, setVendors] = useState([]);
-  
+  const { slug, subcategoryId, lat, lng, maxDistance } = router.query;
+  const [services, setServices] = useState([]);
+  const [vendorNames, setVendorNames] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   useEffect(() => {
-    const fetchVendors = async () => {
-      if (slug) {
-        const response = await fetch(`http://localhost:5000/api/vendors?service=${slug.replace(/-/g, ' ')}`);
-        const data = await response.json();
-        setVendors(data);
+    const fetchServices = async () => {
+      if (subcategoryId && lat && lng) {
+        setIsLoading(true);
+        setError(null);
+        try {
+          const url = `${process.env.API_URL}api/services/services/filter?subcategory=${subcategoryId}&lng=${lat}&lat=${lng}&maxDistance=${maxDistance || 10000}`;
+          console.log("Fetching URL:", url);
+
+          const response = await fetch(url);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const data = await response.json();
+          console.log("Received data:", data);
+          setServices(data);
+
+          // Fetch vendor names
+          const vendorIds = [...new Set(data.map(service => typeof service.vendor === 'object' ? service.vendor._id : service.vendor))];
+          const namesPromises = vendorIds.map(id => fetchVendorName(id));
+          const names = await Promise.all(namesPromises);
+          const vendorNamesMap = Object.fromEntries(vendorIds.map((id, index) => [id, names[index]]));
+          setVendorNames(vendorNamesMap);
+        } catch (error) {
+          console.error('Error fetching services:', error);
+          setError(error.message);
+        } finally {
+          setIsLoading(false);
+        }
       }
     };
 
-    fetchVendors();
-  }, [slug]);
+    fetchServices();
+  }, [subcategoryId, lat, lng, maxDistance]);
+
+  const fetchVendorName = async (vendorId) => {
+    if (!vendorId) return 'Unknown Vendor';
+    try {
+      const response = await fetch(`${process.env.API_URL}api/vendors/${vendorId}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      return data.userId?.name || 'Unknown Vendor';
+    } catch (error) {
+      console.error(`Error fetching vendor name for ID ${vendorId}:`, error);
+      return 'Unknown Vendor';
+    }
+  };
+
+  const getVendorName = (service) => {
+    const vendorId = typeof service.vendor === 'object' ? service.vendor._id : service.vendor;
+    return vendorNames[vendorId] || 'Loading...';
+  };
+
+  if (isLoading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error}</p>;
 
   return (
-    <div className="h-screen">
-      {/* Banner Section */}
-      <div className="bg-red-950 h-60 flex justify-center items-center">
-        {image ? (
-          <img
-            src={image}
-            alt={slug}
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <p className="text-white text-2xl">No Image Available</p>
-        )}
-      </div>
-
-      {/* Content Section */}
-      <div className="mt-6 mb-5">
-        <a className="text-4xl font-sans subpixel-antialiased font-bold ml-10">
-          Available vendors for {slug?.replace(/-/g, ' ')}
-        </a>
-      </div>
-
-      <div className="border-t-2 border-black mb-8" />
-      <div className="flex flex-col items-center">
-        {vendors.length > 0 ? (
-          vendors.map(vendor => (
-            <div key={vendor._id} className="bg-slate-200 w-11/12 p-4 mb-4 rounded-lg shadow">
-              <h2 className="text-xl font-bold">{vendor.name}</h2>
-              <p>Location: {vendor.location.coordinates.join(', ')}</p>
-              <p>Availability: {vendor.availability ? 'Available' : 'Not Available'}</p>
-              <p>Rating: {vendor.rating} ({vendor.totalReviews} reviews)</p>
-              <p>Bio: {vendor.bio}</p>
-            </div>
-          ))
-        ) : (
-          <p>No vendors found for this service.</p>
-        )}
-      </div>
+    <div className="container mx-auto p-4">
+      <h1 className="text-3xl font-bold mb-6">Services for {slug?.replace(/-/g, ' ')}</h1>
+      {services.length > 0 ? (
+        services.map((service) => (
+          <div key={service._id} className="bg-white shadow-md rounded-lg p-6 mb-4">
+            <h2 className="text-xl font-semibold mb-2">{service.name}</h2>
+            <p className="mb-2">Vendor: {getVendorName(service)}</p>
+            <p className="mb-2">Price: ${service.price}</p>
+            <p className="mb-2">Availability: {service.availability ? 'Available' : 'Not Available'}</p>
+            <p className="mb-2">Description: {service.description}</p>
+            <p className="mb-2">Distance: {service.distance?.toFixed(2)} km</p>
+          </div>
+        ))
+      ) : (
+        <p>No services found for this subcategory within the specified distance. (Subcategory: {subcategoryId}, Lng: {lat}, Lat: {lng})</p>
+      )}
     </div>
   );
 };
