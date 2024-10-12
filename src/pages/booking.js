@@ -79,7 +79,7 @@ const BookingPage = () => {
     const fetchVendorDetails = async () => {
       if (vendorName) {
         try {
-          const response = await fetch(`http://localhost:5000/api/vendors/${vendorName}`);
+          const response = await fetch(`${process.env.API_URL}api/vendors/${vendorName}`);
           const data = await response.json();
           setVendorDetails(data);
         } catch (error) {
@@ -110,7 +110,7 @@ const BookingPage = () => {
 
     try {
       // Use fetch to make a POST request
-      const response = await fetch('http://localhost:5000/api/bookings/', {
+      const response = await fetch(`${process.env.API_URL}api/bookings/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

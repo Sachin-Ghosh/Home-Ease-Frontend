@@ -48,7 +48,7 @@ const Login = () => {
       // router.push('/login');
       // In your login.js file
       if (data?.role === 'customer') {
-        router.push('/personal-info'); // Redirect to personal info page
+        router.push('/home'); // Redirect to personal info page
       } else if (data?.role === 'vendor') {
         router.push('/vendor-info'); // Redirect to vendor info page (create this page similarly)
       }

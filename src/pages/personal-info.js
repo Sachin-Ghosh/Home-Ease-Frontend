@@ -69,7 +69,7 @@ export default function PersonalInfoPage() {
         throw new Error('Failed to update profile');
       }
       toast("Profile updated successfully.");
-      router.push('/homePage');
+      router.push('/home');
     } catch (error) {
       toast(`Error: ${error.message}`);
     }

@@ -475,7 +475,7 @@ export default function ServiceBooking() {
   const fetchSchedule = async () => {
     if (!vendorId) return;
     try {
-      const response = await fetch(`http://localhost:5000/api/schedules/vendor/${vendorId}`);
+      const response = await fetch(`${process.env.API_URL}api/schedules/vendor/${vendorId}`);
       const data = await response.json();
       if (data.success) {
         setSchedule(data.schedule);
@@ -565,7 +565,7 @@ export default function ServiceBooking() {
 
         console.log('Sending booking data:', bookingData);
 
-        const response = await fetch('http://localhost:5000/api/schedules/normal', {
+        const response = await fetch(`${process.env.API_URL}api/schedules/normal`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -618,7 +618,7 @@ export default function ServiceBooking() {
     console.log('Sending booking request:', bookingRequest);
   
     try {
-      const response = await fetch('http://localhost:5000/api/schedules/request', {
+      const response = await fetch(`${process.env.API_URL}api/schedules/request`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -681,7 +681,7 @@ export default function ServiceBooking() {
   
       console.log('Sending booking data:', bookingData);
   
-      const response = await fetch('http://localhost:5000/api/bookings/', {
+      const response = await fetch(`${process.env.API_URL}api/bookings/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

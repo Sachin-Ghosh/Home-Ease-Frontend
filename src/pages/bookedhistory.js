@@ -225,7 +225,7 @@ export default function BookedServices() {
   
       try {
         console.log("Fetching bookings for user:", authUser._id);
-        const response = await fetch(`http://localhost:5000/api/bookings/customer/${authUser._id}`, {
+        const response = await fetch(`${process.env.API_URL}api/bookings/customer/${authUser._id}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
