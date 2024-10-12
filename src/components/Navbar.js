@@ -113,11 +113,11 @@ const Navbar = () => {
         {/* If not logged in, show Sign Up and Login buttons */}
         {!token && (
           <>
-            <li style={{ listStyleType: "none" }}>
+            {/* <li style={{ listStyleType: "none" }}>
               <Link href="/create-account" className="text-white font-semibold bg-red-600">
                 Sign Up
               </Link>
-            </li>
+            </li> */}
             <div className="flex-none">
               <Link href="/login" className="flex items-center btn btn-ghost normal-case text-xl text-primary">
                 <PiUser size={24} className="mr-2" />
