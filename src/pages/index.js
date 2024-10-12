@@ -31,7 +31,9 @@ export default function Home() {
       text="Find reliable service providers for all your home needs."
     />
       </span>
+      <Link href="/login">
         <button className="btn btn-primary">Get Started</button>
+        </Link>
     </div>
       
     <section className="py-10 bg-base-200">

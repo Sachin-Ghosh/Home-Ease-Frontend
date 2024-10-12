@@ -50,7 +50,7 @@ const Login = () => {
       if (data?.role === 'customer') {
         router.push('/home'); // Redirect to personal info page
       } else if (data?.role === 'vendor') {
-        router.push('/vendor-info'); // Redirect to vendor info page (create this page similarly)
+        router.push('/dashboard'); // Redirect to vendor info page (create this page similarly)
       }
     } catch (error) {
       console.error('Error:', error);

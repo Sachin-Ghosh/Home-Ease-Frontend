@@ -4,8 +4,7 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/router";
 import { PiUser } from "react-icons/pi";
-import { IoIosMenu } from "react-icons/io";
-import { FaSearch, FaUser, FaShoppingCart, FaMapMarkerAlt } from 'react-icons/fa';
+import { FaMapMarkerAlt } from 'react-icons/fa';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,11 +15,6 @@ const Navbar = () => {
   // Ref to the sidebar element
   const sidebarRef = useRef(null);
   
-  // Close sidebar when a link is clicked
-  const closeSidebar = () => {
-    setSidebarOpen(false);
-  };
-
   // Close sidebar when user clicks outside the sidebar
   const handleClickOutside = (event) => {
     if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
@@ -68,108 +62,97 @@ const Navbar = () => {
   }, [token]);
 
   return (
-    <>
-      <nav className="navbar bg-base-100 shadow-lg">
-        {token && (
-          <div>
-            <IoIosMenu className="cursor-pointer" size={30} color="grey" onClick={toggleSidebar} />
-            {/* Sidebar */}
-            {sidebarOpen && (
-              <div
-                ref={sidebarRef}
-                className={`dark:bg-slate-950 bg-white h-full absolute top-20 border-2 left-0 transform mr-12 ${
-                  sidebarOpen ? "translate-x-0" : "-translate-x-full"
-                } transition-transform duration-300 ease-in-out w-72 z-10`}
-              >
-                <ul className="flex flex-col gap-4 px-4 py-3">
-                  {authUser?.role === "customer" && (
-                    <li>
-                      <Link
-                        href="/dashboard"
-                        className="flex items-center gap-3 p-2 cursor-pointer bg-transparent text-black font-semibold shadow-none hover:bg-purple-700 hover:text-white rounded-md"
-                        onClick={closeSidebar}
-                      >
-                        Dashboard
-                      </Link>
-                    </li>
-                  )}
-                </ul>
-              </div>
-            )}
-          </div>
-        )}
-        <div className="navbar-start">
-          <Link
-            href={
-              token
-                ? authUser.role === "customer"
-                  ? "/home"
-                  : "/"
-                : "/ "
-            }
-            className="flex items-center justify-center"
-          >
-            <h1 className="text-xl font-bold hidden md:block text-nowrap">
-              HomeEase
-            </h1>
-          </Link>
-        </div>
+    <nav className="navbar bg-base-100 shadow-lg">
+      <div className="navbar-start">
+        <Link
+          href={token ? (authUser.role === "customer" ? "/home" : "/") : "/"}
+          className="flex items-center justify-center"
+        >
+          <h1 className="text-xl font-bold hidden md:block text-nowrap">
+            HomeEase
+          </h1>
+        </Link>
+      </div>
+
+      {/* Navbar center links */}
+      {token && (
         <div className="navbar-center hidden lg:flex">
           <ul className="menu menu-horizontal p-0">
-            <li><a href='/home'>Home</a></li>
-            <li><a href='/bookedhistory'>Services</a></li>
+            <li>
+              <a href="/home">Home</a>
+            </li>
+            {/* Conditional links based on the user's role */}
+            {authUser?.role === "customer" && (
+              <>
+                <li>
+                  <a href="/bookedhistory">Booking History</a>
+                </li>
+              </>
+            )}
+            {authUser?.role === "vendor" && (
+              <>
+                <li>
+                  <a href="/dashboard">Dashboard</a>
+                </li>
+                <li>
+                  <a href="/schedule">Schedule</a>
+                </li>
+              </>
+            )}
           </ul>
+
           <div className="flex items-center space-x-2 bg-white border rounded-full py-2 px-4 shadow-sm">
             <FaMapMarkerAlt className="text-blue-500" />
             <span className="text-gray-700">{locationName}</span>
           </div>
         </div>
-        <div className="navbar-end">
-          {!token && (
+      )}
+
+      {/* Navbar end links */}
+      <div className="navbar-end">
+        {/* If not logged in, show Sign Up and Login buttons */}
+        {!token && (
+          <>
             <li style={{ listStyleType: "none" }}>
-              <Link
-                href="/create-account"
-                style={{ display: "none" }}
-                className="text-white font-semibold bg-red-600"
-              >
+              <Link href="/create-account" className="text-white font-semibold bg-red-600">
                 Sign Up
               </Link>
             </li>
-          )}
-          {!token && (
             <div className="flex-none">
-              <Link
-                href="/login"
-                className="flex items-center btn btn-ghost normal-case text-xl text-primary"
-              >
+              <Link href="/login" className="flex items-center btn btn-ghost normal-case text-xl text-primary">
                 <PiUser size={24} className="mr-2" />
                 Login
               </Link>
             </div>
-          )}
-          {token && (
-            <div className="dropdown dropdown-end">
-              <div
-                tabIndex={0}
-                role="button"
-                className="btn btn-ghost btn-circle avatar"
-              >
-                <PiUser size={28} />
-              </div>
-              <ul className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
-                <li>
-                  <Link href="/profile">Profile</Link>
-                </li>
-                <li>
-                  <button onClick={logout}>Logout</button>
-                </li>
-              </ul>
+          </>
+        )}
+
+        {/* If logged in, show profile dropdown */}
+        {token && (
+          <div className="dropdown dropdown-end">
+            <div
+              tabIndex={0}
+              role="button"
+              className="btn btn-ghost btn-circle avatar"
+            >
+              <PiUser size={28} />
             </div>
-          )}
-        </div>
-      </nav>
-    </>
+            <ul className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
+              {/* Conditional profile link based on user's role */}
+              <li>
+                <Link href={authUser?.role === "customer" ? "/profile" : "/vendor-profile"}>
+                  Profile
+                </Link>
+              </li>
+              <li>
+                <button onClick={logout}>Logout</button>
+              </li>
+            </ul>
+          </div>
+        )}
+      </div>
+    </nav>
   );
-}
+};
 
 export default Navbar;

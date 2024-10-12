@@ -53,24 +53,39 @@ export default function VendorInfoPage() {
 
   async function onSubmit(e) {
     e.preventDefault();
+  
+    // Validate that latitude and longitude are set
+    if (!formData.geo_location.lat || !formData.geo_location.lng) {
+      toast("Please retrieve your current location.");
+      return;
+    }
+  
     try {
-      const response = await fetch(`${process.env.API_URL}api/vendors/${authUser._id}`, {
+      const response = await fetch(`${process.env.API_URL}api/vendors`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          userId: authUser._id,
+          services: formData.services,
+          bio: formData.bio,
+          geo_location: formData.geo_location // Include lat/lng
+        }),
       });
+  
       if (!response.ok) {
         throw new Error('Failed to update profile');
       }
+  
       toast("Profile updated successfully.");
       router.push('/dashboard');
     } catch (error) {
       toast(`Error: ${error.message}`);
     }
   }
+  
 
   return (
     <div className="p-4 w-full container mx-auto space-y-6">

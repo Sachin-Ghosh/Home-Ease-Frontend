@@ -6,7 +6,7 @@ import TypingAnimation from '@/components/ui/typing-animation';
 import Bestseller from '@/components/Bestseller';
 import Banner1 from '@/components/Banner1';
 
-export default function HomePage1() {
+export default function HomePage() {
   return (
     <div className="relative w-full min-h-screen bg-gradient-to-r from-blue-100 via-white to-blue-200 overflow-hidden">
       {/* Background RetroGrid */}
