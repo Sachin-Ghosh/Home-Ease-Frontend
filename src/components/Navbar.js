@@ -117,7 +117,7 @@ const Navbar = () => {
         <div className="navbar-center hidden lg:flex">
           <ul className="menu menu-horizontal p-0">
             <li><a href='/home'>Home</a></li>
-            <li><a href='/services'>Services</a></li>
+            <li><a href='/bookedhistory'>Services</a></li>
           </ul>
           <div className="flex items-center space-x-2 bg-white border rounded-full py-2 px-4 shadow-sm">
             <FaMapMarkerAlt className="text-blue-500" />
