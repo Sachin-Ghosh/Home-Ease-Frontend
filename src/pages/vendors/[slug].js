@@ -188,17 +188,17 @@ const VendorPage = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <NearbyVendors categoryId="66fc8715b5fdfbea12db0e3d"/>
+      <NearbyVendors vendorNames={vendorNames} services={services}/>
       <h1 className="text-3xl font-bold mb-6">Services for {slug?.replace(/-/g, ' ')}</h1>
       {services.length > 0 ? (
         services.map((service) => (
           <div key={service._id} className="bg-white shadow-md rounded-lg p-6 mb-4">
             <h2 className="text-xl font-semibold mb-2">{service.name}</h2>
             <p className="mb-2">Vendor: {getVendorName(service)}</p>
-            <p className="mb-2">Price: ${service.price}</p>
-            <p className="mb-2">Availability: {service.availability ? 'Available' : 'Not Available'}</p>
+            <p className="mb-2">Price: ₹{service.price}</p>
+            <p className="mb-2">Availability: Available</p>
             <p className="mb-2">Description: {service.description}</p>
-            <p className="mb-2">Distance: {service.distance?.toFixed(2)} km</p>
+            {/* <p className="mb-2">Distance: {service.distance?.toFixed(2)} km</p> */}
             <Link href={{
               pathname: `/servicebooking/${service._id}`,
               query: {

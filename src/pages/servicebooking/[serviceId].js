@@ -472,14 +472,34 @@ export default function ServiceBooking() {
     fetchSchedule();
   }, [vendorId, authUser]);
 
+
+  useEffect(() => {
+  if (schedule) {
+    console.log("Current schedule:", schedule);
+    console.log("Available dates:", schedule.availableDates.map(d => new Date(d.date).toISOString()));
+  }
+}, [schedule]);
+
   const fetchSchedule = async () => {
     if (!vendorId) return;
     try {
       const response = await fetch(`${process.env.API_URL}api/schedules/vendor/${vendorId}`);
       const data = await response.json();
       if (data.success) {
-        setSchedule(data.schedule);
-        console.log("Fetched schedule:", data.schedule);
+        const parsedSchedule = {
+          ...data.schedule,
+          availableDates: data.schedule.availableDates.map(d => ({
+            ...d,
+            date: new Date(d.date).toISOString(),
+            timeSlots: d.timeSlots.map(slot => ({
+              ...slot,
+              startTime: new Date(slot.startTime).toISOString(),
+              endTime: new Date(slot.endTime).toISOString(),
+            }))
+          }))
+        };
+        setSchedule(parsedSchedule);
+        console.log("Fetched schedule:", parsedSchedule);
       } else {
         console.error('Failed to fetch schedule:', data.message);
       }
@@ -487,6 +507,21 @@ export default function ServiceBooking() {
       console.error('Error fetching schedule:', error);
     }
   };
+  useEffect(() => {
+  const fetchService = async () => {
+    if (!serviceId) return;
+    try {
+      const response = await fetch(`${process.env.API_URL}api/services/${serviceId}`);
+      const data = await response.json();
+      console.log(data)
+        setDuration(data.duration);
+        console.log("Fetched duration:", data.duration);
+    } catch (error) {
+      console.error('Error fetching schedule:', error);
+    }
+  };
+  fetchService();
+  }, [serviceId]);
 
   const fetchCustomerInfo = async () => {
     if (!authUser) return;
@@ -529,11 +564,15 @@ export default function ServiceBooking() {
     setSelectedDate(date);
     setSelectedTime(null);
     const selectedDateString = date.toISOString().split('T')[0];
-    const availableDate = schedule?.availableDates.find(d => d.date.startsWith(selectedDateString));
+    const availableDate = schedule?.availableDates.find(d => {
+      const availableDateObj = new Date(d.date);
+      return availableDateObj.toISOString().split('T')[0] === selectedDateString;
+    });
     if (availableDate) {
       setAvailableTimeSlots(availableDate.timeSlots);
     } else {
       setAvailableTimeSlots([]);
+      console.log('No available time slots for selected date');
     }
   };
 
@@ -546,6 +585,7 @@ export default function ServiceBooking() {
       try {
         const bookingData = {
           vendor: vendorId,
+          schedule: schedule._id,
           availableDates: [
             {
               date: selectedDate.toISOString().split('T')[0],
@@ -587,7 +627,7 @@ export default function ServiceBooking() {
           type: 'Normal',
           date: selectedDate,
           time: selectedTime,
-          scheduleId: result.schedule._id // Assuming the API returns the schedule ID
+          scheduleId: schedule._id // Assuming the API returns the schedule ID
         });
         setIsDialogOpen(false);
         alert('Booking confirmed successfully!');
@@ -639,7 +679,7 @@ export default function ServiceBooking() {
         type: 'Special',
         date: currentDateTime,
         status: 'Requested',
-        scheduleId: result.schedule ? result.schedule._id : result._id // Fallback to result._id if schedule is not present
+        scheduleId: schedule ? schedule._id : result._id // Fallback to result._id if schedule is not present
       });
   
       setIsSpecialDialogOpen(false);
@@ -709,12 +749,11 @@ export default function ServiceBooking() {
   const isDateAvailable = (date) => {
     if (!schedule) return false;
     const dateString = date.toISOString().split('T')[0];
-    return schedule.availableDates.some(d => d.date.startsWith(dateString));
-  };
-
-  const formatTime = (isoString) => {
-    const date = new Date(isoString);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return schedule.availableDates.some(d => {
+      const availableDate = new Date(d.date);
+      const availableDateString = availableDate.toISOString().split('T')[0];
+      return availableDateString === dateString;
+    });
   };
 
   const formatDateTime = (date) => {
@@ -726,6 +765,11 @@ export default function ServiceBooking() {
       minute: '2-digit',
       hour12: true
     });
+  };
+
+  const formatTime = (isoString) => {
+    const date = new Date(isoString);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   return (
@@ -752,7 +796,7 @@ export default function ServiceBooking() {
               <ul className="list-disc pl-5">
                 <li>Subcategory: {subcategoryName}</li>
                 <li>Vendor: {vendorName}</li>
-                <li>Price: ${price}</li>
+                <li>Price: ₹{price}</li>
               </ul>
             </CardContent>
           </Card>
@@ -775,29 +819,30 @@ export default function ServiceBooking() {
                   </DialogDescription>
                 </DialogHeader>
                 <div className="flex flex-col items-center gap-4 py-4">
-                  <DatePicker
-                    selected={selectedDate}
-                    onChange={handleDateChange}
-                    inline
-                    className="rounded-md border"
-                    dayClassName={(date) => {
-                      return isDateAvailable(date) ? "bg-green-500 text-white rounded-full" : undefined;
-                    }}
-                  />
-                  {selectedDate && (
-                    <div className="grid grid-cols-3 gap-2 w-full mt-4">
-                      {availableTimeSlots.map((slot) => (
-                        <Button 
-                          key={slot._id} 
-                          variant={selectedTime === slot ? "default" : "outline"} 
-                          className="w-full"
-                          onClick={() => handleTimeSelection(slot)}
-                        >
-                          {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
-                        </Button>
-                      ))}
-                    </div>
-                  )}
+                <DatePicker
+  selected={selectedDate}
+  onChange={handleDateChange}
+  inline
+  className="rounded-md border"
+  filterDate={isDateAvailable}
+  dayClassName={(date) => 
+    isDateAvailable(date) ? "bg-green-500 text-white rounded-full" : undefined
+  }
+/>
+{selectedDate && (
+  <div className="grid grid-cols-3 gap-2 w-full mt-4">
+    {availableTimeSlots.map((slot) => (
+      <Button 
+        key={slot._id} 
+        variant={selectedTime === slot ? "default" : "outline"} 
+        className="w-full"
+        onClick={() => handleTimeSelection(slot)}
+      >
+        {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
+      </Button>
+    ))}
+  </div>
+)}
                   {selectedDate && selectedTime && (
                     <Button onClick={handleConfirmBooking} className="w-full mt-4">
                       Confirm Booking
@@ -898,3 +943,232 @@ export default function ServiceBooking() {
     </div>
   );
 }
+
+
+
+
+// import { useAuth } from '@/context/AuthContext';
+// import { useRouter } from 'next/router';
+// import { useState, useEffect } from 'react';
+// import Image from 'next/image';
+// import DatePicker from 'react-datepicker';
+// import "react-datepicker/dist/react-datepicker.css";
+// import { Button } from '@/components/ui/button';
+// import {
+//   Dialog,
+//   DialogContent,
+//   DialogDescription,
+//   DialogHeader,
+//   DialogTitle,
+//   DialogTrigger,
+// } from '@/components/ui/dialog';
+// import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+// export default function ServiceBooking() {
+//   const router = useRouter();
+//   const { token, authUser } = useAuth();
+//   const { serviceId, serviceName, vendorName, price, description, subcategoryName, vendorId } = router.query;
+  
+//   const [selectedDate, setSelectedDate] = useState(null);
+//   const [selectedTime, setSelectedTime] = useState(null);
+//   const [schedule, setSchedule] = useState(null);
+//   const [availableTimeSlots, setAvailableTimeSlots] = useState([]);
+//   const [isDialogOpen, setIsDialogOpen] = useState(false);
+//   const [confirmedBooking, setConfirmedBooking] = useState(null);
+//   const [customerId, setCustomerId] = useState('');
+
+//   useEffect(() => {
+//     fetchCustomerInfo();
+//     fetchSchedule();
+//   }, [vendorId, authUser]);
+
+//   // Fetch the vendor's schedule
+//   const fetchSchedule = async () => {
+//     if (!vendorId) return;
+//     try {
+//       const response = await fetch(`${process.env.API_URL}api/schedules/vendor/${vendorId}`);
+//       const data = await response.json();
+//       if (data.success) {
+//         setSchedule(data.schedule);
+//       } else {
+//         console.error('Failed to fetch schedule:', data.message);
+//       }
+//     } catch (error) {
+//       console.error('Error fetching schedule:', error);
+//     }
+//   };
+
+//   // Fetch customer info
+//   const fetchCustomerInfo = async () => {
+//     if (!authUser) return;
+//     try {
+//       const response = await fetch(`${process.env.API_URL}api/customers/customer/user/${authUser._id}`, {
+//         headers: {
+//           'Authorization': `Bearer ${token}`
+//         }
+//       });
+//       const data = await response.json();
+//       if (data) {
+//         setCustomerId(data._id);
+//       } else {
+//         console.error('Failed to fetch customer info:', 'No customer data in response');
+//       }
+//     } catch (error) {
+//       console.error('Error fetching customer info:', error);
+//     }
+//   };
+
+//   // Handle date change
+//   const handleDateChange = (date) => {
+//     setSelectedDate(date);
+//     setSelectedTime(null);
+//     const selectedDateString = date.toISOString().split('T')[0];
+//     const availableDate = schedule?.availableDates.find(d => d.date.startsWith(selectedDateString));
+//     if (availableDate) {
+//       setAvailableTimeSlots(availableDate.timeSlots);
+//     } else {
+//       setAvailableTimeSlots([]);
+//     }
+//   };
+
+//   // Confirm booking
+//   const handleConfirmBooking = async () => {
+//     if (selectedDate && selectedTime) {
+//       const bookingData = {
+//         vendor: vendorId,
+//         schedule: schedule._id,
+//         availableDates: [
+//           {
+//             date: selectedDate.toISOString().split('T')[0],
+//             timeSlots: [
+//               {
+//                 startTime: new Date(selectedTime.startTime).toISOString(),
+//                 endTime: new Date(selectedTime.endTime).toISOString(),
+//                 isBooked: true,
+//                 bookedBy: customerId
+//               }
+//             ]
+//           }
+//         ],
+//         customerId: customerId,
+//         serviceId: serviceId
+//       };
+
+//       try {
+//         const response = await fetch(`${process.env.API_URL}api/schedules/normal`, {
+//           method: 'POST',
+//           headers: {
+//             'Content-Type': 'application/json',
+//             'Authorization': `Bearer ${token}`
+//           },
+//           body: JSON.stringify(bookingData)
+//         });
+//         if (!response.ok) {
+//           const errorData = await response.json();
+//           throw new Error(`Failed to book the slot: ${errorData.message || 'Unknown error'}`);
+//         }
+
+//         const result = await response.json();
+//         setConfirmedBooking({ type: 'Normal', date: selectedDate, time: selectedTime });
+//         alert('Booking confirmed successfully!');
+//       } catch (error) {
+//         console.error('Error confirming booking:', error);
+//         alert(`Failed to confirm booking: ${error.message}`);
+//       }
+//     } else {
+//       alert('Please select both date and time before confirming.');
+//     }
+//   };
+
+//   // Check if the date is available
+// const isDateAvailable = (date) => {
+//   if (!schedule) return false;
+
+//   // Get the date in YYYY-MM-DD format from the date picker
+//   const selectedDateString = date.toISOString().split('T')[0];
+
+//   // Log the selected date for debugging
+//   console.log("Selected Date String:", selectedDateString);
+
+//   // Compare only the date portion of the available dates
+//   const availableDateStrings = schedule.availableDates.map(d => new Date(d.date).toISOString().split('T')[0]);
+//   console.log("Available Dates Strings:", availableDateStrings);
+
+//   return availableDateStrings.includes(selectedDateString);
+// };
+//   return (
+//     <div className="mx-auto px-4 py-8 h-screen bg-white w-screen">
+//       <div className="grid md:grid-cols-2 gap-8">
+//         {/* Service Information Section */}
+//         <div>
+//           <h1 className="text-3xl font-bold mb-4">{serviceName}</h1>
+//           <Image
+//             src="/path-to-your-image.jpg" // Replace with actual image path
+//             alt={serviceName}
+//             width={400}
+//             height={300}
+//             className="rounded-lg mb-4"
+//           />
+//           <p className="text-gray-600 mb-4 text-center textarea-info">
+//             {description}
+//           </p>
+//           <Card>
+//             <CardHeader>
+//               <CardTitle>Service Details</CardTitle>
+//             </CardHeader>
+//             <CardContent>
+//               <ul className="list-disc pl-5">
+//                 <li>Subcategory: {subcategoryName}</li>
+//                 <li>Vendor: {vendorName}</li>
+//                 <li>Price: ₹{price}</li>
+//               </ul>
+//             </CardContent>
+//           </Card>
+//         </div>
+
+//         {/* Booking Section */}
+//         <div>
+//           <h2 className="text-2xl font-semibold mb-4">Schedule Service</h2>
+//           <Button variant="outline" className="w-full" onClick={() => setIsDialogOpen(true)}>Normal Booking</Button>
+
+//           {/* Normal Booking Dialog */}
+//           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+//             <DialogContent className="sm:max-w-[425px] bg-white">
+//               <DialogHeader>
+//                 <DialogTitle>Schedule Normal Booking</DialogTitle>
+//                 <DialogDescription>Choose a date and time for your service.</DialogDescription>
+//               </DialogHeader>
+//               <div className="flex flex-col items-center gap-4 py-4">
+//               <DatePicker
+//                 selected={selectedDate}
+//                 onChange={handleDateChange}
+//                 inline
+//                 dayClassName={(date) => {
+//                     const isAvailable = isDateAvailable(date);
+//                     console.log(`Date: ${date.toISOString().split('T')[0]} - Available: ${isAvailable}`);
+//                     return isAvailable ? "bg-green-500 text-white rounded-full" : "bg-red-200"; // Optional: set a color for unavailable dates
+//                 }}
+//             />
+//                 {selectedDate && (
+//                   <div>
+//                     {availableTimeSlots.map((slot) => (
+//                       <Button key={slot._id} onClick={() => handleTimeSelection(slot)}>
+//                         {`${formatTime(slot.startTime)} - ${formatTime(slot.endTime)}`}
+//                       </Button>
+//                     ))}
+//                   </div>
+//                 )}
+//                 <Button onClick={handleConfirmBooking}>Confirm Booking</Button>
+//               </div>
+//             </DialogContent>
+//           </Dialog>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+// const formatTime = (isoString) => {
+//   const date = new Date(isoString);
+//   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+// };

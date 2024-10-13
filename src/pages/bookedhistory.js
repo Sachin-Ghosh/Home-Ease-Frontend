@@ -203,6 +203,217 @@
 //   );
 // }
 
+// import { useRouter } from 'next/router';
+// import { useEffect, useState } from 'react';
+// import { MapPin, MessageCircle, Clock, CreditCard } from 'lucide-react';
+// import { Button } from "@/components/ui/button";
+// import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+// import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+// import { Badge } from "@/components/ui/badge";
+// import { useAuth } from '@/context/AuthContext';
+
+// export default function BookedServices() {
+  
+//   const router = useRouter();
+//   const { token, authUser } = useAuth();
+//   const [bookedServices, setBookedServices] = useState([]);
+//   const [selectedTab, setSelectedTab] = useState('all');
+//   const [selectedService, setSelectedService] = useState(null);
+//   const [isLoading, setIsLoading] = useState(true);
+//   const [error, setError] = useState(null);
+//   const [customerName, setCustomerName] = useState('');
+//   const [customerId, setCustomerId] = useState('');
+//   const [vendorName, setVendorName] = useState('');
+//   const [vendorId, setVendorId] = useState('');
+//   const [vendorUserId, setVendorUserId] = useState('');
+
+//   useEffect(() => {
+//   const fetchCustomerInfo = async () => {
+//     if (!authUser) return;
+//     try {
+//       const response = await fetch(`${process.env.API_URL}api/customers/customer/user/${authUser._id}`, {
+//         headers: {
+//           'Authorization': `Bearer ${token}`
+//         }
+//       });
+//       if (!response.ok) throw new Error('Failed to fetch profile');
+//       const data = await response.json();
+//       console.log("Customer info API response:", data);
+//       if (data) {
+//         setCustomerName(data.userId.name);
+//         setCustomerId(data._id);
+//         console.log("Set customer name:", data.name);
+//         console.log("Set customer ID:", data._id);
+//       } else {
+//         console.error('Failed to fetch customer info:', 'No customer data in response');
+//       }
+//     } catch (error) {
+//       console.error('Error fetching customer info:', error);
+//     }
+//   }; fetchCustomerInfo();
+// }, [ authUser]);
+
+// useEffect(() => {
+//   if (customerId) {
+//     fetchBookings();
+//   }
+// }, [customerId]);
+
+// useEffect(() => {
+//   if (vendorUserId) {
+//     fetchVendorInfo();
+//   }
+// }, [vendorUserId]);
+
+// const fetchBookings = async () => {
+//   try {
+//     const response = await fetch(`${process.env.API_URL}api/bookings/customer/${customerId}`, {
+//       headers: {
+//         'Authorization': `Bearer ${token}`,
+//       },
+//     });
+
+//     if (!response.ok) {
+//       throw new Error('Failed to fetch bookings');
+//     }
+
+//     const data = await response.json();
+//     console.log("Fetched bookings data:", data); // Log the full response for debugging
+
+//     if (data.length > 0 && data[0].vendor) {
+//       console.log("Vendor data:", data[0].vendor);
+
+//       // Check if vendor exists and has userId
+//       if (data[0].vendor.userId) {
+//         const vendorUserId = data[0].vendor.userId;
+//         console.log("Vendor User ID:", vendorUserId);
+//         setVendorUserId(vendorUserId);
+//       } else {
+//         console.error("Vendor data does not have a userId");
+//       }
+//     } else {
+//       console.error("No vendor data found in the first booking");
+//     }
+
+//     setBookedServices(data);
+//   } catch (error) {
+//     console.error('Error fetching bookings:', error);
+//   }
+// };
+
+
+
+//     const fetchVendorInfo = async () => {
+//       try {
+//         const response = await fetch(`${process.env.API_URL}api/vendors/vendor/user/${vendorUserId}`, {
+//           headers: {
+//             'Authorization': `Bearer ${token}`
+//           }
+//         });
+//         if (!response.ok) throw new Error('Failed to fetch profile');
+//         const data = await response.json();
+//         setVendorName(data.userId.name);
+//         setVendorId(data._id);
+//       } catch (error) {
+//         console.error('Error fetching vendor info:', error);
+//       }
+//     };
+  
+
+//   const handleTabChange = (value) => {
+//     setSelectedTab(value);
+//   };
+
+//   const formatDate = (dateString) => {
+//     const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+//     return new Date(dateString).toLocaleDateString(undefined, options);
+//   };
+
+//   const ServiceCard = ({ service }) => (
+//     <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-105">
+//       <CardHeader>
+//         <CardTitle className="flex justify-between items-center">
+//           {service.service[0].name}
+//         </CardTitle>
+//         <CardDescription className="text-gray-600">
+//           Start: {formatDate(service.slot.startTime)}
+//           <br />
+//           End: {formatDate(service.slot.endTime)}
+//         </CardDescription>
+//       </CardHeader>
+//       <CardContent>
+//         <p className="text-gray-700">Vendor: {vendorName || 'N/A'}</p>
+//         <p className="text-gray-700">Payment Type: {service.payment_type}</p>
+//         <p className="text-gray-700">Payment Status: {service.payment_status}</p>
+//       </CardContent>
+//       <CardFooter className="flex justify-between items-center">
+//         <Badge variant={service.status === 'completed' ? 'secondary' : 'default'}>
+//           {service.status}
+//         </Badge>
+//         <Dialog>
+//           <DialogTrigger asChild>
+//             <Button variant="outline">View Details</Button>
+//           </DialogTrigger>
+//           <DialogContent className="sm:max-w-[425px] bg-white">
+//             <ServiceDetailsModal service={service} />
+//           </DialogContent>
+//         </Dialog>
+//       </CardFooter>
+//     </Card>
+//   );
+
+//   const ServiceDetailsModal = ({ service }) => (
+//     <>
+//       <DialogHeader className='bg-white'>
+//         <DialogTitle>{service.service[0].name}</DialogTitle>
+//         <DialogDescription>Service details</DialogDescription>
+//       </DialogHeader>
+//       <div className="grid gap-4 py-4 bg-white">
+//         <div>
+//           <h4 className="font-semibold mb-2">Booking Info</h4>
+//           <p>Start Time: {formatDate(service.slot.startTime)}</p>
+//           <p>End Time: {formatDate(service.slot.endTime)}</p>
+//           <p>Vendor: {service.vendor.userId.name || 'N/A'}</p>
+//           <p>Payment Type: {service.payment_type}</p>
+//           <p>Payment Status: {service.payment_status}</p>
+//           <p>Booking Status: {service.status}</p>
+//         </div>
+//         <Button className="w-full">
+//           <MessageCircle className="mr-2" size={20} />
+//           Chat with Vendor
+//         </Button>
+//       </div>
+//     </>
+//   );
+
+//   return (
+//     <div className="mx-auto px-4 py-8 bg-white min-h-screen">
+//       <h1 className="text-4xl font-bold mb-6 text-center text-blue-900">My Booked Services</h1>
+//       <div className="w-full">
+//         <div className="flex justify-center mb-6">
+//           <button onClick={() => handleTabChange('all')} className={`px-4 py-2 ${selectedTab === 'all' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>All</button>
+//           <button onClick={() => handleTabChange('ongoing')} className={`px-4 py-2 ${selectedTab === 'ongoing' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>Ongoing</button>
+//           <button onClick={() => handleTabChange('completed')} className={`px-4 py-2 ${selectedTab === 'completed' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>Completed</button>
+//         </div>
+//         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+//           {bookedServices
+//             .filter(service => 
+//               selectedTab === 'all' || 
+//               (selectedTab === 'ongoing' && service.status !== 'completed') ||
+//               (selectedTab === 'completed' && service.status === 'completed')
+//             )
+//             .map((service) => (
+//               <ServiceCard key={service._id} service={service} />
+//             ))}
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+
+
+import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { MapPin, MessageCircle, Clock, CreditCard } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -212,39 +423,100 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from '@/context/AuthContext';
 
 export default function BookedServices() {
+  const router = useRouter();
+  const { token, authUser } = useAuth();
   const [bookedServices, setBookedServices] = useState([]);
   const [selectedTab, setSelectedTab] = useState('all');
-  const [selectedService, setSelectedService] = useState(null);
+  const [vendorNames, setVendorNames] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { token, authUser } = useAuth();
 
   useEffect(() => {
-    const fetchBookings = async () => {
+    const fetchCustomerInfo = async () => {
       if (!authUser) return;
-  
       try {
-        console.log("Fetching bookings for user:", authUser._id);
-        const response = await fetch(`${process.env.API_URL}api/bookings/customer/${authUser._id}`, {
+        const response = await fetch(`${process.env.API_URL}api/customers/customer/user/${authUser._id}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
-  
+        if (!response.ok) throw new Error('Failed to fetch profile');
+        const data = await response.json();
+        console.log("Customer info API response:", data);
+        return data._id;
+      } catch (error) {
+        console.error('Error fetching customer info:', error);
+        return null;
+      }
+    };
+
+    const fetchBookings = async (customerId) => {
+      try {
+        const response = await fetch(`${process.env.API_URL}api/bookings/customer/${customerId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+    
         if (!response.ok) {
           throw new Error('Failed to fetch bookings');
         }
-  
+    
         const data = await response.json();
-        console.log("Fetched bookings:", data);
+        console.log("Fetched bookings data:", data);
         setBookedServices(data);
+
+        // Set the selected tab based on the statuses of the bookings
+        const hasCompleted = data.some(booking => booking.status === 'Completed');
+        const hasOngoing = data.some(booking => booking.status !== 'Completed');
+        
+        if (hasCompleted && hasOngoing) {
+          setSelectedTab('all');
+        } else if (hasCompleted) {
+          setSelectedTab('completed');
+        } else if (hasOngoing) {
+          setSelectedTab('ongoing');
+        } else {
+          setSelectedTab('all');
+        }
+    
+        // Fetch vendor info for each booking
+        const vendors = {};
+        for (const service of data) {
+          const vendorName = await fetchVendorInfo(service.vendor.userId);
+          vendors[service.vendor.userId] = vendorName;
+        }
+        setVendorNames(vendors);
       } catch (error) {
         console.error('Error fetching bookings:', error);
       }
     };
-  
-    fetchBookings();
+
+    const fetchData = async () => {
+      const customerId = await fetchCustomerInfo();
+      if (customerId) {
+        await fetchBookings(customerId);
+      }
+    };
+
+    fetchData();
   }, [authUser, token]);
+
+  const fetchVendorInfo = async (vendorUserId) => {
+    try {
+      const response = await fetch(`${process.env.API_URL}api/vendors/vendor/user/${vendorUserId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) throw new Error('Failed to fetch vendor info');
+      const data = await response.json();
+      return data.userId.name;
+    } catch (error) {
+      console.error('Error fetching vendor info:', error);
+      return 'N/A';
+    }
+  };
 
   const handleTabChange = (value) => {
     setSelectedTab(value);
@@ -255,7 +527,7 @@ export default function BookedServices() {
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
-  const ServiceCard = ({ service }) => (
+  const ServiceCard = ({ service, vendorName }) => (
     <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-105">
       <CardHeader>
         <CardTitle className="flex justify-between items-center">
@@ -268,12 +540,12 @@ export default function BookedServices() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <p className="text-gray-700">Vendor: {service.vendor.userId.name || 'N/A'}</p>
+        <p className="text-gray-700">Vendor: {vendorName}</p>
         <p className="text-gray-700">Payment Type: {service.payment_type}</p>
         <p className="text-gray-700">Payment Status: {service.payment_status}</p>
       </CardContent>
       <CardFooter className="flex justify-between items-center">
-        <Badge variant={service.status === 'completed' ? 'secondary' : 'default'}>
+        <Badge variant={service.status === 'Completed' ? 'secondary' : 'default'}>
           {service.status}
         </Badge>
         <Dialog>
@@ -322,15 +594,15 @@ export default function BookedServices() {
           <button onClick={() => handleTabChange('completed')} className={`px-4 py-2 ${selectedTab === 'completed' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>Completed</button>
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {bookedServices
-            .filter(service => 
-              selectedTab === 'all' || 
-              (selectedTab === 'ongoing' && service.status !== 'completed') ||
-              (selectedTab === 'completed' && service.status === 'completed')
-            )
-            .map((service) => (
-              <ServiceCard key={service._id} service={service} />
-            ))}
+        {bookedServices
+          .filter(service =>
+            selectedTab === 'all' ||
+            (selectedTab === 'ongoing' && service.status !== 'Completed') ||
+            (selectedTab === 'completed' && service.status === 'Completed')
+          )
+          .map((service) => (
+            <ServiceCard key={service._id} service={service} vendorName={vendorNames[service.vendor.userId] || 'N/A'} />
+          ))}
         </div>
       </div>
     </div>
