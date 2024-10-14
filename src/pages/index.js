@@ -89,13 +89,13 @@ export default function Home() {
         </div>
       </div>
     </section>
-      <main className="container mx-auto mt-8 p-4">
+      {/* <main className="container mx-auto mt-8 p-4">
         <h1 className="text-3xl font-semibold mb-4">Welcome to the Home Page</h1>
         <p className="text-gray-600 mb-4">Navigate to different pages from here:</p>
         <Link href="/home" className="text-blue-500 hover:underline">
           Go to HomePage1
         </Link>
-      </main>
+      </main> */}
     </div>
 
   );

@@ -62,7 +62,7 @@ const Login = () => {
     <div className='flex flex-col items-center justify-center min-h-screen bg-cover bg-center' style={{ backgroundImage: "url('/assets/Login.png')" }}>
       <div className="flex flex-col items-center justify-center w-full h-full bg-white bg-opacity-70 p-8 rounded-lg shadow-lg">
         <div className="flex justify-center">
-          <Image className="w-auto h-20 mb-4" src="/assets/Nav-logo.png" alt="Logo" width={100} height={100} />
+          {/* <Image className="w-auto h-20 mb-4" src="/assets/Nav-logo.png" alt="Logo" width={100} height={100} /> */}
         </div>
 
         <p className="text-3xl text-center font-extrabold text-blue-800 mb-6">
