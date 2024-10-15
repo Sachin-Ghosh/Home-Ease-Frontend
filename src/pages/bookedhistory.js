@@ -527,38 +527,48 @@ export default function BookedServices() {
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
-  const ServiceCard = ({ service, vendorName }) => (
-    <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-105">
-      <CardHeader>
-        <CardTitle className="flex justify-between items-center">
-          {service.service[0].name}
-        </CardTitle>
-        <CardDescription className="text-gray-600">
-          Start: {formatDate(service.slot.startTime)}
-          <br />
-          End: {formatDate(service.slot.endTime)}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <p className="text-gray-700">Vendor: {vendorName}</p>
-        <p className="text-gray-700">Payment Type: {service.payment_type}</p>
-        <p className="text-gray-700">Payment Status: {service.payment_status}</p>
-      </CardContent>
-      <CardFooter className="flex justify-between items-center">
-        <Badge variant={service.status === 'Completed' ? 'secondary' : 'default'}>
-          {service.status}
-        </Badge>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button variant="outline">View Details</Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px] bg-white">
-            <ServiceDetailsModal service={service} />
-          </DialogContent>
-        </Dialog>
-      </CardFooter>
-    </Card>
-  );
+  const ServiceCard = ({ service, vendorName }) => {
+    // Determine the card color based on the service status
+    const cardColor = service.status === 'Completed'
+      ? 'bg-green-100'
+      : service.status === 'Cancelled'
+      ? 'bg-red-100'
+      : 'bg-blue-100'; // For 'Scheduled' or other statuses
+  
+    return (
+      <Card className={`shadow-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-105 ${cardColor}`}>
+        <CardHeader>
+          <CardTitle className="flex justify-between items-center">
+            {service.service[0].name}
+          </CardTitle>
+          <CardDescription className="text-gray-600">
+            Start: {formatDate(service.slot.startTime)}
+            <br />
+            End: {formatDate(service.slot.endTime)}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-gray-700">Vendor: {vendorName}</p>
+          <p className="text-gray-700">Payment Type: {service.payment_type}</p>
+          <p className="text-gray-700">Payment Status: {service.payment_status}</p>
+        </CardContent>
+        <CardFooter className="flex justify-between items-center">
+          <Badge variant={service.status === 'Completed' ? 'secondary' : 'default'}>
+            {service.status}
+          </Badge>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline">View Details</Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px] bg-white">
+              <ServiceDetailsModal service={service} />
+            </DialogContent>
+          </Dialog>
+        </CardFooter>
+      </Card>
+    );
+  };
+  
 
   const ServiceDetailsModal = ({ service }) => (
     <>
