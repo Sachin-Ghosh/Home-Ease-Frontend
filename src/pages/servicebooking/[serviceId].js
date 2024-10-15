@@ -466,6 +466,7 @@ export default function ServiceBooking() {
   const [customerId, setCustomerId] = useState('');
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [paymentType, setPaymentType] = useState('');
+  const [photos, setPhoto] = useState('');
 
   useEffect(() => {
     fetchCustomerInfo();
@@ -514,6 +515,8 @@ export default function ServiceBooking() {
       const response = await fetch(`${process.env.API_URL}api/services/${serviceId}`);
       const data = await response.json();
       console.log(data)
+      console.log(data.photos)
+      setPhoto(data.photos)
         setDuration(data.duration);
         console.log("Fetched duration:", data.duration);
     } catch (error) {
@@ -779,10 +782,10 @@ export default function ServiceBooking() {
         <div>
           <h1 className="text-3xl font-bold mb-4">{serviceName}</h1>
           <Image
-            src="/path-to-your-image.jpg" // Replace with actual image path
+            src={`${process.env.API_URL}${photos}`} // Replace with actual image path
             alt={serviceName}
-            width={400}
-            height={300}
+            width={200}
+            height={100}
             className="rounded-lg mb-4"
           />
           <p className="text-gray-600 mb-4 text-center textarea-info">
