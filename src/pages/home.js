@@ -74,7 +74,7 @@ export default function HomePage1() {
         <Banner1 /> 
       </div>
       {/* Footer Section */}
-      <Footer />
+    
     </div>
   );
 }
