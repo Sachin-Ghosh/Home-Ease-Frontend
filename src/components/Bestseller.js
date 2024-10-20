@@ -6,28 +6,28 @@ const bestSellerData = [
     id: 1,
     name: "Spa for Women",
     imgSrc: "https://images.unsplash.com/photo-1582719478189-df3ad2992830?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-    price: "$50",
+    price: "₹50",
     link: "#"
   },
   {
     id: 2,
     name: "Men's Haircut",
     imgSrc: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-    price: "$30",
+    price: "₹30",
     link: "#"
   },
   {
     id: 3,
     name: "AC Repair",
     imgSrc: "https://images.unsplash.com/photo-1517832207067-4db24a2ae47c?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-    price: "$100",
+    price: "₹100",
     link: "#"
   },
   {
     id: 4,
     name: "Full Home Cleaning",
     imgSrc: "https://images.unsplash.com/photo-1507089947368-19c1da9775ae?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-    price: "$150",
+    price: "₹150",
     link: "#"
   }
 ];

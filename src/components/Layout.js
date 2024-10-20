@@ -5,7 +5,7 @@ const Layout = ({ children }) => {
   return (
     <>
       <Navbar />
-      <div  className="bg-base-300">
+      <div  className="">
       {children}
       </div>
       <Footer />

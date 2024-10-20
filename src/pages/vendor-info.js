@@ -32,45 +32,66 @@ export default function VendorInfoPage() {
 
   const getLocation = () => {
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          // Save the location to state
-          setFormData(prevData => ({
-            ...prevData,
-            geo_location: { lat: latitude, lng: longitude },
-          }));
-          toast("Location retrieved successfully.");
-        },
-        (error) => {
-          toast(`Error retrieving location: ${error.message}`);
-        }
-      );
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                // Save the location to state
+                setFormData(prevData => ({
+                    ...prevData,
+                    geo_location: { lat: latitude, lng: longitude },
+                }));
+                toast("Location retrieved successfully.");
+                console.log("Retrieved location:", { lat: latitude, lng: longitude }); // Debugging log
+            },
+            (error) => {
+                toast(`Error retrieving location: ${error.message}`);
+            }
+        );
     } else {
-      toast("Geolocation is not supported by this browser.");
+        toast("Geolocation is not supported by this browser.");
     }
-  };
+};
+
 
   async function onSubmit(e) {
     e.preventDefault();
-    try {
-      const response = await fetch(`${process.env.API_URL}api/vendors/${authUser._id}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(formData),
-      });
-      if (!response.ok) {
-        throw new Error('Failed to update profile');
-      }
-      toast("Profile updated successfully.");
-      router.push('/dashboard');
-    } catch (error) {
-      toast(`Error: ${error.message}`);
+
+    // Validate that latitude and longitude are set
+    if (!formData.geo_location.lat || !formData.geo_location.lng) {
+        toast("Please retrieve your current location.");
+        return;
     }
-  }
+
+    try {
+        const response = await fetch(`${process.env.API_URL}api/vendors`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              userId: authUser._id,
+              services: formData.services,
+              bio: formData.bio,
+              location: {
+                  type: 'Point',
+                  coordinates: [formData.geo_location.lng, formData.geo_location.lat] // Correct format
+              }
+          }),          
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to update profile');
+        }
+
+        toast("Profile updated successfully.");
+        router.push('/dashboard');
+    } catch (error) {
+        toast(`Error: ${error.message}`);
+    }
+}
+
+  
 
   return (
     <div className="p-4 w-full container mx-auto space-y-6">

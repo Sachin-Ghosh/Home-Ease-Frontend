@@ -5,8 +5,9 @@ import Footer from '@/components/Footer';
 import TypingAnimation from '@/components/ui/typing-animation';
 import Bestseller from '@/components/Bestseller';
 import Banner1 from '@/components/Banner1';
+import Blogs from '@/components/Blogs';
 
-export default function HomePage1() {
+export default function HomePage() {
   return (
     <div className="relative w-full min-h-screen bg-gradient-to-r from-blue-100 via-white to-blue-200 overflow-hidden">
       {/* Background RetroGrid */}
@@ -73,7 +74,11 @@ export default function HomePage1() {
       <div className="relative z-10">
         <Banner1 /> 
       </div>
+      <div className="relative z-10">
+        <Blogs /> 
+      </div>
       {/* Footer Section */}
+      {/* <Footer />   */}
     
     </div>
   );
