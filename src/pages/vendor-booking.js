@@ -148,7 +148,6 @@
 // }
 
 
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/router';
@@ -156,6 +155,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import VendorLocationTracker from '@/components/VendorLocationTracker';
+import { MessageSquare } from 'lucide-react';
+import ChatModal from '@/components/ChatModal';
 
 export default function VendorBookings() {
   const router = useRouter();
@@ -163,9 +164,14 @@ export default function VendorBookings() {
   const [vendorName, setVendorName] = useState('');
   const [vendorId, setVendorId] = useState('');
   const [bookings, setBookings] = useState([]);
-  const [customerNames, setCustomerNames] = useState({}); // Store customer names
+  const [customerNames, setCustomerNames] = useState({});
   const [showLocationTracker, setShowLocationTracker] = useState(false);
-const [selectedBooking, setSelectedBooking] = useState(null);
+  const [selectedBooking, setSelectedBooking] = useState(null);
+  
+  // New state for chat
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [selectedCustomerId, setSelectedCustomerId] = useState(null);
+  const [selectedBookingId, setSelectedBookingId] = useState(null);
 
   useEffect(() => {
     if (authUser) {
@@ -292,6 +298,18 @@ const [selectedBooking, setSelectedBooking] = useState(null);
     setSelectedBooking(booking);
     setShowLocationTracker(true);
   };
+
+  const handleChatOpen = (booking) => {
+    setSelectedCustomerId(booking.customer._id);
+    setSelectedBookingId(booking._id);
+    setIsChatOpen(true);
+  };
+
+  const handleChatClose = () => {
+    setIsChatOpen(false);
+    setSelectedCustomerId(null);
+    setSelectedBookingId(null);
+  };
   
   
 
@@ -317,6 +335,7 @@ const [selectedBooking, setSelectedBooking] = useState(null);
 
               <p>Status: {booking.status}</p>
 
+              <div className="flex flex-wrap gap-2 mt-4">
               {booking.status === 'Scheduled' && (
                 <div className="mt-2">
                   <Button onClick={() => handleStatusChange(booking._id, 'Completed')} className="mr-2">
@@ -327,6 +346,25 @@ const [selectedBooking, setSelectedBooking] = useState(null);
                   </Button>
                 </div>
               )}
+              {/* Chat button */}
+              <Button 
+                  onClick={() => handleChatOpen(booking)}
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  <MessageSquare className="h-4 w-4" />
+                  Chat with Customer
+                </Button>
+
+                {/* Location tracking button */}
+                <Button 
+                  onClick={() => handleStartTracking(booking)} 
+                  size="sm"
+                >
+                  Start Tracking
+                </Button>
+              </div>
 
                 <p>Payment Status: {booking.payment_status}</p>
                 
@@ -363,6 +401,15 @@ const [selectedBooking, setSelectedBooking] = useState(null);
     </div>
   </div>
 )}
+{isChatOpen && selectedCustomerId && selectedBookingId && (
+        <ChatModal
+          isOpen={isChatOpen}
+          onClose={handleChatClose}
+          bookingId={selectedBookingId}
+          vendorId={vendorId}
+          customerId={selectedCustomerId}
+        />
+      )}
 
             </CardContent>
           </Card>
