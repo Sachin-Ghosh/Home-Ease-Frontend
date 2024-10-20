@@ -20,7 +20,9 @@ export default function AboutPage() {
               <div className="md:w-1/2 mb-6 md:mb-0">
                 <h2 className="text-4xl font-bold text-gray-900 mb-4">Your Trusted Home Services Partner</h2>
                 <p className="text-xl text-gray-600 mb-6">We connect you with skilled professionals to take care of all your home service needs.</p>
-                <Button size="lg">Book a Service</Button>
+                <button className="bg-gradient-to-r from-blue-400 to-blue-600 text-white font-semibold py-3 px-8 rounded-full shadow-lg transition duration-300 hover:shadow-xl hover:opacity-90 transform hover:scale-105">
+            Explore Services
+          </button>
               </div>
               <div className="md:w-1/2">
                 <Image
@@ -96,7 +98,9 @@ export default function AboutPage() {
           <div className="mt-16 bg-blue-700 rounded-lg shadow-xl overflow-hidden">
             <div className="px-4 py-5 sm:p-6 text-center">
               <h3 className="text-2xl leading-6 font-medium text-white mb-4">Ready to experience top-notch home services?</h3>
-              <Button size="lg" variant="secondary">Get Started Today</Button>
+              <button className="bg-gradient-to-r from-blue-400 to-blue-600 text-white font-semibold py-3 px-8 rounded-full shadow-lg transition duration-300 hover:shadow-xl hover:opacity-90 transform hover:scale-105">
+            Explore Services
+          </button>
             </div>
           </div>
         </div>

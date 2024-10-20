@@ -1,15 +1,13 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { MapPin, MessageCircle, Clock, CreditCard } from 'lucide-react';
+import { MapPin, MessageCircle, Clock, CreditCard,AlertCircle, ExternalLink, Loader as LoaderIcon } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useAuth } from '@/context/AuthContext';
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Send } from "lucide-react";
+import { Loader } from '@googlemaps/js-api-loader';
 
 export default function BookedServices() {
   const router = useRouter();
@@ -17,9 +15,34 @@ export default function BookedServices() {
   const [bookedServices, setBookedServices] = useState([]);
   const [selectedTab, setSelectedTab] = useState('all');
   const [vendorNames, setVendorNames] = useState({});
+  const [customerId, setCustomerId] = useState();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const [specialBookings, setSpecialBookings] = useState({});
+  useEffect(() => {
+    const fetchSpecialBookings = async () => {
+      if (!customerId) return;
+      try {
+        const response = await fetch(`${process.env.API_URL}api/bookings/customer/${customerId}/special`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (!response.ok) throw new Error('Failed to fetch special bookings');
+        const data = await response.json();
+        const specialBookingsMap = {};
+        data.data.forEach(booking => {
+          specialBookingsMap[booking.bookingDetails._id] = true;
+        });
+        setSpecialBookings(specialBookingsMap);
+      } catch (error) {
+        console.error('Error fetching special bookings:', error);
+      }
+    };
+
+    fetchSpecialBookings();
+  }, [customerId, token]);
   useEffect(() => {
     const fetchCustomerInfo = async () => {
       if (!authUser) return;
@@ -35,6 +58,7 @@ export default function BookedServices() {
         if (!response.ok) throw new Error('Failed to fetch profile');
         const data = await response.json();
         console.log("Customer info API response:", data);
+        setCustomerId(data._id);
         return data._id;
       } catch (error) {
         console.error('Error fetching customer info:', error);
@@ -125,7 +149,7 @@ export default function BookedServices() {
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
-  const ServiceCard = ({ service, vendorName }) => {
+  const ServiceCard = ({ service, vendorName, isSpecial }) => {
     // Determine the card color based on the service status
     const cardColor = service.status === 'Completed'
       ? 'bg-green-100'
@@ -134,7 +158,14 @@ export default function BookedServices() {
       : 'bg-blue-100'; // For 'Scheduled' or other statuses
   
     return (
-      <Card className={`shadow-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-105 ${cardColor}`}>
+      <Card className={`shadow-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-105 ${cardColor} relative overflow-hidden`}>
+      {isSpecial && (
+        <div className="absolute top-0 left-0 w-24 h-24 overflow-hidden">
+          <div className="absolute top-0 left-0 w-32 bg-yellow-400 text-yellow-900 text-xs font-bold py-1 text-center transform -rotate-45 translate-x-[-30%] translate-y-[10%] shadow-md">
+            SPECIAL
+          </div>
+        </div>
+      )}
         <CardHeader>
           <CardTitle className="flex justify-between items-center">
             {service.service[0].name}
@@ -159,192 +190,331 @@ export default function BookedServices() {
               <Button variant="outline">View Details</Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px] bg-white">
-              <ServiceDetailsModal service={service} />
+              <ServiceDetailsModal service={service} customerId={customerId} />
             </DialogContent>
           </Dialog>
         </CardFooter>
       </Card>
     );  
   };
+
+  const ServiceDetailsModal = ({ service, customerId }) => {
+    const [specialBooking, setSpecialBooking] = useState(null);
+    const [isSpecialBooking, setIsSpecialBooking] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
   
-
-  const ServiceDetailsModal = ({ service, userId }) => (
-    <>
-      <DialogHeader className='bg-white'>
-        <DialogTitle>{service.service[0].name}</DialogTitle>
-        <DialogDescription>Service details</DialogDescription>
-      </DialogHeader>
-      <div className="grid gap-4 py-4 bg-white">
-        <div>
-          <h4 className="font-semibold mb-2">Booking Info</h4>
-          <p>Start Time: {formatDate(service.slot.startTime)}</p>
-          <p>End Time: {formatDate(service.slot.endTime)}</p>
-          <p>Vendor: {service.vendor.userId.name || 'N/A'}</p>
-          <p>Payment Type: {service.payment_type}</p>
-          <p>Payment Status: {service.payment_status}</p>
-          <p>Booking Status: {service.status}</p>
-        </div>
-        <ChatModal bookingId={service._id} userId={userId} />
-      </div>
-    </>
-  );
-
-  const initialMessages = [
-    { id: 1, sender: 'provider', content: "Hello! How can I assist you today?", timestamp: "10:00 AM" },
-    { id: 2, sender: 'user', content: "Hi, I need help with plumbing. My kitchen sink is leaking.", timestamp: "10:02 AM" },
-    { id: 3, sender: 'provider', content: "I'm sorry to hear that. Can you provide more details about the leak?", timestamp: "10:03 AM" },
-    { id: 4, sender: 'user', content: "It's dripping from the pipe under the sink. The cabinet below is getting wet.", timestamp: "10:05 AM" },
-    { id: 5, sender: 'provider', content: "I see. It sounds like you might have a loose connection or a worn-out washer. I can come take a look. When would be a good time?", timestamp: "10:07 AM" },
-  ];
-
-  function ChatModal({ bookingId, userId }) {
-    const [messages, setMessages] = useState([]);
-    const [newMessage, setNewMessage] = useState('');
-    const [chatId, setChatId] = useState(null);
-
+    const [mapState, setMapState] = useState({
+      distance: null,
+      duration: null,
+      error: null,
+      isLoading: true
+    });
+  
     useEffect(() => {
-      fetchChat();
-    }, [bookingId]);
-
-    const fetchChat = async () => {
-      try {
-        const baseUrl = process.env.API_URL.endsWith('/') 
-          ? process.env.API_URL.slice(0, -1) 
-          : process.env.API_URL;
-        const response = await fetch(`${baseUrl}/api/chat/booking/${bookingId}`);
-        if (!response.ok) {
-          throw new Error('Chat not found');
-        }
-        const data = await response.json();
-        console.log('Fetched chat data:', data);
-        setMessages(data.messages);
-        setChatId(data._id);
-        console.log('Set chatId to:', data._id);
-      } catch (error) {
-        console.error('Error fetching chat:', error);
-        if (error.message === 'Chat not found') {
-          createNewChat();
-        }
-      }
-    };
-
-    const createNewChat = async () => {
-      try {
-        const url = `${process.env.API_URL}api/chat`;
-        console.log('Attempting to create new chat at URL:', url);
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-          body: JSON.stringify({ bookingId }),
-        });
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.error('Server response:', errorData);
-          throw new Error(errorData.message || 'Failed to create chat');
-        }
-        const data = await response.json();
-        console.log('Created new chat:', data);
-        setChatId(data._id);
-        setMessages(data.messages || []);
-        console.log('Set chatId to:', data._id);
-      } catch (error) {
-        console.error('Error creating chat:', error);
-        // Show error message to user
-      }
-    };
-
-    const handleSendMessage = async () => {
-      if (!chatId) {
-        console.error('Chat ID is not available. Unable to send message.');
-        // Show error message to user
-        return;
-      }
-      
-      if (newMessage.trim() !== '') {
+      const fetchSpecialBookingDetails = async () => {
+        setIsLoading(true);
         try {
-          const response = await fetch(`${process.env.API_URL}api/chat/${chatId}/message`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              sender: userId,
-              message: newMessage.trim(),
-            }),
-          });
-          
-          if (!response.ok) {
-            const errorData = await response.json();
-            console.error('Server response:', errorData);
-            throw new Error(errorData.message || 'Failed to send message');
-          }
-          
+          const response = await fetch(`${process.env.API_URL}api/bookings/customer/${customerId}/special`);
           const data = await response.json();
-          setMessages(data.messages);
-          setNewMessage('');
+          
+          if (data.success && data.data.length > 0) {
+            const specialBooking = data.data.find(booking => 
+              booking.bookingDetails._id === service._id
+            );
+            console.log(specialBooking)
+            if (specialBooking) {
+              setIsSpecialBooking(true);
+              setSpecialBooking(specialBooking);
+            } else {
+              setIsSpecialBooking(false);
+            }
+          } else {
+            setIsSpecialBooking(false);
+          }
         } catch (error) {
-          console.error('Error sending message:', error);
-          // Show error message to user
+          console.error('Error fetching special booking details:', error);
+          setError('Failed to fetch booking details');
+        } finally {
+          setIsLoading(false);
         }
+      };
+  
+      fetchSpecialBookingDetails();
+    }, [customerId, service._id]);
+  
+    useEffect(() => {
+      if (isSpecialBooking) {
+        const initializeMap = async () => {
+          try {
+            const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API;
+            
+            if (!apiKey) {
+              throw new Error('Google Maps API key is missing');
+            }
+    
+            const loader = new Loader({
+              apiKey,
+              version: 'weekly',
+              libraries: ['places']
+            });
+    
+            const google = await loader.load();
+            const mapElement = document.getElementById('map');
+            
+            if (!mapElement) {
+              throw new Error('Map container element not found');
+            }
+    
+            if (!specialBooking.vendorDetails.location) {
+              throw new Error('Vendor location is not available');
+            }
+    
+            const vendorLocation = {
+              lat: specialBooking.vendorDetails.location.coordinates[1],
+              lng: specialBooking.vendorDetails.location.coordinates[0]
+            };
+    
+            const map = new google.maps.Map(mapElement, {
+              center: vendorLocation,
+              zoom: 14,
+              styles: [
+                {
+                  featureType: "all",
+                  elementType: "geometry",
+                  stylers: [{ color: "#f5f5f5" }]
+                },
+                {
+                  featureType: "road",
+                  elementType: "geometry",
+                  stylers: [{ color: "#ffffff" }]
+                }
+              ]
+            });
+    
+            new google.maps.Marker({
+              position: vendorLocation,
+              map,
+              title: "Service Provider",
+              icon: {
+                path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                scale: 5,
+                fillColor: "#22c55e",
+                fillOpacity: 1,
+                strokeWeight: 2,
+                strokeColor: "#16a34a",
+              }
+            });
+    
+            if (navigator.geolocation) {
+              navigator.geolocation.getCurrentPosition(
+                (position) => {
+                  const customerLocation = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                  };
+    
+                  new google.maps.Marker({
+                    position: customerLocation,
+                    map,
+                    title: "Your Location",
+                    icon: {
+                      path: google.maps.SymbolPath.CIRCLE,
+                      scale: 8,
+                      fillColor: "#3b82f6",
+                      fillOpacity: 1,
+                      strokeWeight: 2,
+                      strokeColor: "#2563eb",
+                    }
+                  });
+    
+                  const directionsService = new google.maps.DirectionsService();
+                  const directionsRenderer = new google.maps.DirectionsRenderer({
+                    map,
+                    suppressMarkers: true,
+                    polylineOptions: {
+                      strokeColor: "#3b82f6",
+                      strokeWeight: 4,
+                      strokeOpacity: 0.8
+                    }
+                  });
+    
+                  directionsService.route({
+                    origin: customerLocation,
+                    destination: vendorLocation,
+                    travelMode: google.maps.TravelMode.DRIVING,
+                  }, (result, status) => {
+                    if (status === "OK") {
+                      directionsRenderer.setDirections(result);
+                      const routeInfo = result.routes[0].legs[0];
+                      setMapState({
+                        distance: routeInfo.distance.text,
+                        duration: routeInfo.duration.text,
+                        error: null,
+                        isLoading: false
+                      });
+                    }
+                  });
+                },
+                (error) => {
+                  console.warn('Geolocation error:', error);
+                  setMapState({
+                    isLoading: false,
+                    error: null
+                  });
+                }
+              );
+            } else {
+              setMapState({
+                isLoading: false,
+                error: null
+              });
+            }
+    
+          } catch (error) {
+            console.error('Map initialization error:', error);
+            setMapState({
+              distance: null,
+              duration: null,
+              error: error.message,
+              isLoading: false
+            });
+          }
+        };
+    
+        initializeMap();
       }
-    };
-
+    }, [isSpecialBooking, specialBooking]);
+    
+    if (isLoading) {
+      return <div className="flex justify-center items-center h-64"><LoaderIcon className="animate-spin h-8 w-8" /></div>;
+    }
+  
+    if (error) {
+      return <Alert variant="destructive"><AlertCircle className="h-4 w-4" /><AlertTitle>Error</AlertTitle><AlertDescription>{error}</AlertDescription></Alert>;
+    }
+  
     return (
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button className="w-full">
-            <MessageCircle className="mr-2" size={20} />
-            Chat with Vendor
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px] bg-white">
-          <DialogHeader>
-            <DialogTitle>Chat with Service Provider</DialogTitle>
-          </DialogHeader>
-          <div className="flex flex-col h-[500px]">
-            <ScrollArea className="flex-grow p-4 space-y-4">
-              {messages.map((message) => (
-                <div
-                  key={message._id}
-                  className={`flex ${message.sender === userId ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div className={`flex items-start space-x-2 max-w-[80%] ${message.sender === userId ? 'flex-row-reverse space-x-reverse' : ''}`}>
-                    <Avatar className="w-8 h-8">
-                      <AvatarImage src={message.sender === userId ? "/placeholder-user.jpg" : "/placeholder-provider.jpg"} />
-                      <AvatarFallback>{message.sender === userId ? 'U' : 'SP'}</AvatarFallback>
-                    </Avatar>
-                    <div className={`rounded-lg p-3 ${message.sender === userId ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
-                      <p className="text-sm">{message.message}</p>
-                      <span className="text-xs opacity-50">{new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+      <div className="bg-white p-4">
+        <DialogHeader>
+          <DialogTitle>{service.service[0].name}</DialogTitle>
+          <DialogDescription>Service location and details</DialogDescription>
+        </DialogHeader>
+        <div>
+          {isSpecialBooking ? (
+            <div className="mt-4 space-y-4">
+              {mapState.error ? (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{mapState.error}</AlertDescription>
+                </Alert>
+              ) : (
+                <>
+                  {mapState.distance && mapState.duration && (
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="flex items-center">
+                          <MapPin className="mr-2 h-4 w-4 text-blue-600" />
+                          <span className="text-sm">Distance: {mapState.distance}</span>
+                        </div>
+                        <div className="flex items-center">
+                          <Clock className="mr-2 h-4 w-4 text-blue-600" />
+                          <span className="text-sm">ETA: {mapState.duration}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div 
+                    id="map" 
+                    className="h-64 w-full rounded-lg border border-gray-200"
+                  />
+                </>
+              )}
+              <div className="space-y-4">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-semibold mb-2 text-gray-900">Booking Details</h4>
+                  <div className="grid gap-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Start Time:</span>
+                      <span>{new Date(service.slot.startTime).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">End Time:</span>
+                      <span>{new Date(service.slot.endTime).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Payment Type:</span>
+                      <span>{service.payment_type}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Payment Status:</span>
+                      <Badge variant={service.payment_status === 'Paid' ? 'success' : 'warning'}>
+                        {service.payment_status}
+                      </Badge>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Booking Status:</span>
+                      <Badge variant={service.status === 'Completed' ? 'success' : 'default'}>
+                        {service.status}
+                      </Badge>
                     </div>
                   </div>
                 </div>
-              ))}
-            </ScrollArea>
-            <div className="p-4 border-t">
-              <form onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }} className="flex space-x-2">
-                <Input
-                  placeholder="Type your message..."
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                />
-                <Button type="submit" size="icon">
-                  <Send className="h-4 w-4" />
-                  <span className="sr-only">Send message</span>
-                </Button>
-              </form>
+              </div>
+      
+              <Button className="w-full mt-4" variant="default">
+                <MessageCircle className="mr-2 h-4 w-4" />
+                Chat with Service Provider
+              </Button>
+            
             </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+          ) : (
+            <div>
+              <div className="space-y-4">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="font-semibold mb-2 text-gray-900">Booking Details</h4>
+                  <div className="grid gap-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Start Time:</span>
+                      <span>{new Date(service.slot.startTime).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">End Time:</span>
+                      <span>{new Date(service.slot.endTime).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Payment Type:</span>
+                      <span>{service.payment_type}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Payment Status:</span>
+                      <Badge variant={service.payment_status === 'Paid' ? 'success' : 'warning'}>
+                        {service.payment_status}
+                      </Badge>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Booking Status:</span>
+                      <Badge variant={service.status === 'Completed' ? 'success' : 'default'}>
+                        {service.status}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+              </div>
+      
+              <Button className="w-full mt-4" variant="default">
+                <MessageCircle className="mr-2 h-4 w-4" />
+                Chat with Service Provider
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
     );
-  }
+  };
 
-  return (
+ return (
     <div className="mx-auto px-4 py-8 bg-white min-h-screen">
       <h1 className="text-4xl font-bold mb-6 text-center text-blue-900">My Booked Services</h1>
       <div className="w-full">
@@ -361,7 +531,7 @@ export default function BookedServices() {
             (selectedTab === 'completed' && service.status === 'Completed')
           )
           .map((service) => (
-            <ServiceCard key={service._id} service={service} vendorName={vendorNames[service.vendor.userId] || 'N/A'} />
+            <ServiceCard key={service._id} service={service} vendorName={vendorNames[service.vendor.userId] || 'N/A'}  isSpecial={specialBookings[service._id]} />
           ))}
         </div>
       </div>

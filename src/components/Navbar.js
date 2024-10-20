@@ -12,7 +12,7 @@ const Navbar = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [locationName, setLocationName] = useState("Loading...");
 
-  // Ref to the sidebar element
+  // Ref to the sidebar elements
   const sidebarRef = useRef(null);
   
   // Close sidebar when user clicks outside the sidebar
@@ -62,13 +62,13 @@ const Navbar = () => {
   }, [token]);
 
   return (
-    <nav className="navbar bg-base-100 shadow-lg">
+    <nav className="navbar bg-white shadow-lg">
       <div className="navbar-start">
         <Link
           href={token ? (authUser.role === "customer" ? "/home" : "/") : "/"}
           className="flex items-center justify-center"
         >
-          <h1 className="text-xl font-bold hidden md:block text-nowrap">
+          <h1 className="text-xl font-bold hidden md:block text-blue-600">
             HomeEase
           </h1>
         </Link>
@@ -77,40 +77,39 @@ const Navbar = () => {
       {/* Navbar center links */}
       {token && (
         <div className="navbar-center hidden lg:flex">
-          <ul className="menu menu-horizontal p-0">
+          <ul className="menu menu-horizontal p-0 text-blue-600">
             <li>
-              <a href="/home">Home</a>
+              <a href="/home" className="hover:text-gray-300">Home</a>
             </li>
             {/* Conditional links based on the user's role */}
             {authUser?.role === "customer" && (
               <>
                 <li>
-                  <a href="/bookedhistory">Booking History</a>
+                  <a href="/bookedhistory" className="hover:text-gray-300">Booking History</a>
                 </li>
               </>
             )}
             {authUser?.role === "vendor" && (
               <>
                 <li>
-                  <a href="/dashboard">Dashboard</a>
+                  <a href="/dashboard" className="hover:text-gray-300">Dashboard</a>
                 </li>
                 <li>
-                  <a href="/schedule">Schedule</a>
+                  <a href="/schedule" className="hover:text-gray-300">Schedule</a>
                 </li>
               </>
             )}
           </ul>
+
           <div className="pr-10">
             <Link href='/about'>
-<h1>
-  About us 
-</h1>
+              <h1 className="text-blue-600 hover:text-gray-300">About Us</h1>
             </Link>
           </div>
 
-          <div className="flex items-center space-x-2 bg-white border rounded-full py-2 px-4 shadow-sm">
-            <FaMapMarkerAlt className="text-blue-500" />
-            <span className="text-gray-700">{locationName}</span>
+          <div className="flex items-center space-x-2 bg-blue-600 border-blue-600 border rounded-full py-2 px-4 shadow-sm">
+            <FaMapMarkerAlt className="text-white" />
+            <span className="text-white">{locationName}</span>
           </div>
         </div>
       )}
@@ -120,13 +119,8 @@ const Navbar = () => {
         {/* If not logged in, show Sign Up and Login buttons */}
         {!token && (
           <>
-            {/* <li style={{ listStyleType: "none" }}>
-              <Link href="/create-account" className="text-white font-semibold bg-red-600">
-                Sign Up
-              </Link>
-            </li> */}
             <div className="flex-none">
-              <Link href="/login" className="flex items-center btn btn-ghost normal-case text-xl text-primary">
+              <Link href="/login" className="flex items-center btn btn-ghost normal-case text-blue-600">
                 <PiUser size={24} className="mr-2" />
                 Login
               </Link>
@@ -142,17 +136,17 @@ const Navbar = () => {
               role="button"
               className="btn btn-ghost btn-circle avatar"
             >
-              <PiUser size={28} />
+              <PiUser size={28} className="text-blue-600" />
             </div>
-            <ul className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
+            <ul className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-white rounded-box w-52">
               {/* Conditional profile link based on user's role */}
               <li>
-                <Link href={authUser?.role === "customer" ? "/profile" : "/vendor-profile"}>
+                <Link href={authUser?.role === "customer" ? "/profile" : "/vendor-profile"} className="text-blue-600 hover:text-gray-300">
                   Profile
                 </Link>
               </li>
               <li>
-                <button onClick={logout}>Logout</button>
+                <button onClick={logout} className="text-blue-600 hover:text-gray-300">Logout</button>
               </li>
             </ul>
           </div>

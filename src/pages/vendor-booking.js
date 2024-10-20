@@ -155,6 +155,7 @@ import { useRouter } from 'next/router';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import VendorLocationTracker from '@/components/VendorLocationTracker';
 
 export default function VendorBookings() {
   const router = useRouter();
@@ -163,6 +164,8 @@ export default function VendorBookings() {
   const [vendorId, setVendorId] = useState('');
   const [bookings, setBookings] = useState([]);
   const [customerNames, setCustomerNames] = useState({}); // Store customer names
+  const [showLocationTracker, setShowLocationTracker] = useState(false);
+const [selectedBooking, setSelectedBooking] = useState(null);
 
   useEffect(() => {
     if (authUser) {
@@ -284,6 +287,12 @@ export default function VendorBookings() {
       toast.error(`Error updating payment status: ${error.message}`);
     }
   };
+
+  const handleStartTracking = (booking) => {
+    setSelectedBooking(booking);
+    setShowLocationTracker(true);
+  };
+  
   
 
   return (
@@ -334,6 +343,27 @@ export default function VendorBookings() {
                     </select>
                     </div>
                 )}
+
+              {/* // In your JSX, add this button to each booking card: */}
+              <Button onClick={() => handleStartTracking(booking)} className="mt-2">
+                Start Tracking
+              </Button>
+
+              {showLocationTracker && selectedBooking && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+    <div className="bg-white p-4 rounded-lg w-3/4 h-3/4">
+      <h2 className="text-xl font-bold mb-4">Live Location Tracking</h2>
+      <VendorLocationTracker 
+        bookingId={selectedBooking._id} 
+        customerLocation={selectedBooking.customerLocation} 
+      />
+      <Button onClick={() => setShowLocationTracker(false)} className="mt-4">
+        Close
+      </Button>
+    </div>
+  </div>
+)}
+
             </CardContent>
           </Card>
         ))}
