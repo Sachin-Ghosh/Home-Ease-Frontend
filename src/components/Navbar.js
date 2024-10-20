@@ -95,6 +95,9 @@ const Navbar = () => {
                   <a href="/dashboard">Dashboard</a>
                 </li>
                 <li>
+                  <a href="/vendor-analytics">Analytics</a>
+                </li>
+                <li>
                   <a href="/schedule">Schedule</a>
                 </li>
               </>
