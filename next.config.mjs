@@ -8,7 +8,7 @@ const nextConfig = {
     return [
       {
         source: '/api/users/:path*',
-        destination: 'https://home-ease-m1t9.onrender.com//api/users/:path*'
+        destination: 'https://home-ease-m1t9.onrender.com/api/users/:path*'
       },
     ];
   },
