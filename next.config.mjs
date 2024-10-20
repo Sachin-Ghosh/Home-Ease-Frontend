@@ -8,7 +8,7 @@ const nextConfig = {
     return [
       {
         source: '/api/users/:path*',
-        destination: 'https://home-ease-gnpw.onrender.com/api/users/:path*'
+        destination: 'https://home-ease-m1t9.onrender.com//api/users/:path*'
       },
     ];
   },
@@ -21,6 +21,12 @@ const nextConfig = {
       {
         protocol: 'http',
         hostname: 'localhost',
+      },
+      {
+        protocol: 'https',
+        hostname: 'home-ease-m1t9.onrender.com',
+        port: '',
+        pathname: '/uploads/**',
       },
     ],
   },
