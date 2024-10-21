@@ -45,7 +45,7 @@ const Login = () => {
       if (data?.role === 'customer') {
         router.push('/home');
       } else if (data?.role === 'vendor') {
-        router.push('/home');
+        router.push('/dashboard');
       }
     } catch (error) {
       console.error('Error:', error);

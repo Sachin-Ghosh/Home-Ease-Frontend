@@ -340,40 +340,35 @@ return (
                 onChange={handleInputChange}
                 required
               />
-             <Select 
-              name="category" 
-              onValueChange={(value) => setSelectedService({...selectedService, category: value})}
-              defaultValue={selectedService?.category?._id || selectedService?.category}
-            >
-              <SelectTrigger className='p-4 border-2 mr-10 '>
-                <SelectValue placeholder="Select Category" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map(category => (
-                  <SelectItem key={category._id} value={category._id} className='bg-white p-4 border-2'>
-                    {category.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select 
-              name="subcategory" 
-              onValueChange={(value) => setSelectedService({...selectedService, subcategory: value})}
-              defaultValue={selectedService?.subcategory?._id || selectedService?.subcategory}
-            >
-               <SelectTrigger className='p-4 border-2  '>
-                <SelectValue placeholder="Select Subcategory" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories
-                  .find(cat => cat._id === (selectedService?.category?._id || selectedService?.category))
-                  ?.subCategories.map(sub => (
-                    <SelectItem key={sub._id} value={sub._id}>
-                      {sub.name}
-                    </SelectItem>
-                  ))}
-              </SelectContent>
-            </Select>
+           <select
+            name="category"
+            value={selectedService?.category?._id || selectedService?.category || ''}
+            onChange={(e) => setSelectedService({...selectedService, category: e.target.value})}
+            required
+          >
+            <option value="">Select Category</option>
+            {categories.map(category => (
+              <option key={category._id} value={category._id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
+
+          <select
+            name="subcategory"
+            value={selectedService?.subcategory?._id || selectedService?.subcategory || ''}
+            onChange={(e) => setSelectedService({...selectedService, subcategory: e.target.value})}
+            required
+          >
+            <option value="">Select Subcategory</option>
+            {categories
+              .find(cat => cat._id === (selectedService?.category?._id || selectedService?.category))
+              ?.subCategories.map(sub => (
+                <option key={sub._id} value={sub._id}>
+                  {sub.name}
+                </option>
+              ))}
+          </select>
               <Input
                 name="price"
                 type="number"
