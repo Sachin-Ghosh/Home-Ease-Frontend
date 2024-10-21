@@ -1,9 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/context/AuthContext';
-import { useRouter } from 'next/router';
-import { Calendar, momentLocalizer } from 'react-big-calendar';
-import moment from 'moment';
-import 'react-big-calendar/lib/css/react-big-calendar.css';
+import React, { useState, useEffect } from 'react'
+import { Calendar, momentLocalizer } from 'react-big-calendar'
+import moment from 'moment'
+import 'react-big-calendar/lib/css/react-big-calendar.css'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
+import { toast } from 'sonner'
+import { Clock, Calendar as CalendarIcon } from 'lucide-react'
+import { useRouter } from 'next/router'
+import { useAuth } from '@/context/AuthContext'
+
 
 const localizer = momentLocalizer(moment);
 
@@ -230,117 +240,108 @@ const handleSpecialServiceSelect = async (serviceId) => {
     }
 };
 
-  return (
-    <div className="container mx-auto p-4">
-            <h1 className="text-3xl font-bold mb-4">Manage Your Schedule</h1>
-            
-            <div className="mb-4">
-                <h2 className="text-xl font-semibold mb-2">Select Special Service</h2>
-                <select
-                    className="select select-bordered w-full max-w-xs"
-                    value={selectedSpecialService || ''}
-                    onChange={(e) => handleSpecialServiceSelect(e.target.value)}
-                >
-                    <option value="">Select a service</option>
-                    {services.map(service => (
-                        <option key={service._id} value={service._id}>{service.name}</option>
-                    ))}
-                </select>
-            </div>
-
-            <div className="mb-4">
-                <label className="flex items-center cursor-pointer">
-                    <input 
-                        type="checkbox" 
-                        className="toggle toggle-primary"
-                        checked={isSpecialAvailable}
-                        onChange={toggleSpecialAvailability}
-                        disabled={!selectedSpecialService}
-                    />
-                    <span className="ml-2 label-text">Available for Special Bookings</span>
-                </label>
-            </div>
-
-      <Calendar
-        localizer={localizer}
-        events={schedule}
-        startAccessor="start"
-        endAccessor="end"
-        style={{ height: 500 }}
-        onSelectSlot={handleSelectSlot}
-        selectable
-        className="mb-4"
-      />
-
-      {isModalVisible && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" id="my-modal">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <h3 className="text-lg font-bold mb-4">Add Availability</h3>
-            <form onSubmit={handleModalSubmit}>
-              <div className="mb-4">
-                <label className="block text-sm font-bold mb-2" htmlFor="service">
-                  Service
-                </label>
-                <select
-                  id="service"
-                  name="service"
-                  value={formData.service}
-                  onChange={handleInputChange}
-                  className="select select-bordered w-full"
-                  required
-                >
-                  <option value="">Select a service</option>
-                  {services.map(service => (
-                    <option key={service._id} value={service._id}>{service.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-bold mb-2" htmlFor="startTime">
-                  Start Time
-                </label>
-                <input
-                  type="time"
-                  id="startTime"
-                  name="startTime"
-                  value={formData.startTime}
-                  onChange={handleInputChange}
-                  className="input input-bordered w-full"
-                  required
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-bold mb-2" htmlFor="endTime">
-                  End Time
-                </label>
-                <input
-                  type="time"
-                  id="endTime"
-                  name="endTime"
-                  value={formData.endTime}
-                  onChange={handleInputChange}
-                  className="input input-bordered w-full"
-                  required
-                />
-              </div>
-              <div className="flex justify-end">
-                <button 
-                  type="button" 
-                  onClick={() => setIsModalVisible(false)}
-                  className="btn btn-outline mr-2"
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="btn btn-primary">
-                  Add
-                </button>
-              </div>
-            </form>
+return (
+  <div className="w-screen mx-auto p-4 bg-white">
+    <h1 className="text-3xl font-bold mb-6 text-blue-600">Manage Your Schedule</h1>
+    
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle className="text-blue-600">Special Service Management</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex items-center space-x-4">
+          <Select onValueChange={handleSpecialServiceSelect} value={selectedSpecialService || ''}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Select a service" />
+            </SelectTrigger>
+            <SelectContent className="bg-white">
+              {services.map(service => (
+                <SelectItem key={service._id} value={service._id}>{service.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="special-availability"
+              checked={isSpecialAvailable}
+              onCheckedChange={toggleSpecialAvailability}
+              disabled={!selectedSpecialService}
+            />
+            <Label htmlFor="special-availability">Available for Special Bookings</Label>
           </div>
         </div>
-      )}
-    </div>
-  );
-};
+      </CardContent>
+    </Card>
+
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle className="text-blue-600">Your Schedule</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Calendar
+          localizer={localizer}
+          events={schedule}
+          startAccessor="start"
+          endAccessor="end"
+          style={{ height: 500 }}
+          onSelectSlot={handleSelectSlot}
+          selectable
+          className="rounded-md border"
+        />
+      </CardContent>
+    </Card>
+
+    <Dialog open={isModalVisible} onOpenChange={setIsModalVisible}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle className="text-blue-600">Add Availability</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleModalSubmit} className="space-y-4">
+          <Select name="service" onValueChange={(value) => handleInputChange({ target: { name: 'service', value } })} value={formData.service}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select a service" />
+            </SelectTrigger>
+            <SelectContent>
+              {services.map(service => (
+                <SelectItem key={service._id} value={service._id}>{service.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <div className="flex items-center space-x-2">
+            <Clock className="h-4 w-4 text-blue-500" />
+            <Input
+              type="time"
+              id="startTime"
+              name="startTime"
+              value={formData.startTime}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+          <div className="flex items-center space-x-2">
+            <Clock className="h-4 w-4 text-blue-500" />
+            <Input
+              type="time"
+              id="endTime"
+              name="endTime"
+              value={formData.endTime}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+          <div className="flex justify-end space-x-2">
+            <Button variant="outline" onClick={() => setIsModalVisible(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" className="bg-blue-500 hover:bg-blue-600 text-white">
+              Add
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  </div>
+)
+}
 
 export default VendorScheduleManager;

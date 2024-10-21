@@ -1,10 +1,10 @@
-
-
-import React, { useEffect, useState } from 'react';
-import { useAuth } from '@/context/AuthContext';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
+import React, { useEffect, useState } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts'
+import { ArrowUpRight, ArrowDownRight, DollarSign, Users, Star, TrendingUp } from 'lucide-react'
+import { useAuth } from '@/context/AuthContext'
 
 export default function VendorAnalytics() {
   const { token, authUser } = useAuth();
@@ -13,8 +13,8 @@ export default function VendorAnalytics() {
   const [revenueData, setRevenueData] = useState(null);
   const [popularServices, setPopularServices] = useState(null);
   const [customerSatisfaction, setCustomerSatisfaction] = useState(null);
-  const [feedbackData, setFeedbackData] = useState(null); // New data for feedback
-  const [serviceTrends, setServiceTrends] = useState(null); // New data for service trends
+  const [feedbackData, setFeedbackData] = useState([]); // Initialize as an empty array
+  const [serviceTrends, setServiceTrends] = useState([]); // Initialize as an empty array
   const [flattenedData, setFlattenedData] = useState([]);
 
   useEffect(() => {
@@ -57,13 +57,6 @@ export default function VendorAnalytics() {
       fetchVendorData();
     }
   }, [authUser, token]);
-
-//   useEffect(() => {
-//     if (bookings) {
-//       const data = generateServiceTrendsData(bookings);
-//       setFlattenedData(data);
-//     }
-//   }, [bookings]);
 
   const generateRevenueData = (bookings) => {
     const monthlyRevenue = {};
@@ -108,22 +101,7 @@ export default function VendorAnalytics() {
     }));
   };
 
-//   const generateServiceTrendsData = (bookings) => {
-//     const serviceTrends = {};
-//     bookings.forEach(booking => {
-//       const serviceName = booking.service[0].name;
-//       const date = new Date(booking.createdAt);
-//       const monthYear = `${date.getFullYear()}-${date.getMonth() + 1}`;
-//       if (!serviceTrends[serviceName]) serviceTrends[serviceName] = {};
-//       serviceTrends[serviceName][monthYear] = (serviceTrends[serviceName][monthYear] || 0) + 1;
-//     });
-//     return Object.entries(serviceTrends).map(([service, trends]) => ({
-//       service,
-//       trends: Object.entries(trends).map(([month, count]) => ({ month, count }))
-//     }));
-//   };
-
-const generateServiceTrendsData = (bookings) => {
+  const generateServiceTrendsData = (bookings) => {
     const serviceTrends = {};
     bookings.forEach(booking => {
       const serviceName = booking.service[0].name;
@@ -144,7 +122,7 @@ const generateServiceTrendsData = (bookings) => {
         flattenedData.push({ month, count, service });
       });
     });
-
+    
     return flattenedData;
   };
 
@@ -152,144 +130,167 @@ const generateServiceTrendsData = (bookings) => {
   
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
-  return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Vendor Analytics</h1>
+  const totalRevenue = revenueData.reduce((sum, entry) => sum + entry.revenue, 0).toFixed(2)
+  const averageRating = (customerSatisfaction.reduce((sum, entry) => sum + entry.value * (entry.name === 'Satisfied' ? 5 : entry.name === 'Neutral' ? 3 : 1), 0) / 
+                        customerSatisfaction.reduce((sum, entry) => sum + entry.value, 0)).toFixed(1)
 
-      {/* Overall Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+  return (
+    <div className="w-screen mx-auto p-4 bg-white">
+      <h1 className="text-3xl font-bold mb-6 text-blue-600">Vendor Analytics Dashboard</h1>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <Card>
-          <CardHeader>
-            <CardTitle>Profile</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <p>Name: {vendorData.userId.name}</p>
-            <p>Email: {vendorData.userId.email}</p>
-            <p>Total Services: {vendorData.services?.length || 0}</p>
-            <p>Rating: 4.3 / 5</p>
+            <div className="text-2xl font-bold">₹{totalRevenue}</div>
+            <p className="text-xs text-muted-foreground">
+              +20.1% from last month
+            </p>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader>
-            <CardTitle>Total Revenue</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Bookings</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground "  />
           </CardHeader>
           <CardContent>
-            <p>₹{revenueData.reduce((sum, entry) => sum + entry.revenue, 0).toFixed(2)}</p>
+            <div className="text-2xl font-bold">{bookingsData.length}</div>
+            <p className="text-xs text-muted-foreground">
+              +180.1% from last month
+            </p>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader>
-            <CardTitle>Total Bookings</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Average Rating</CardTitle>
+            <Star className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <p>{bookingsData.length}</p>
+            <div className="text-2xl font-bold">{averageRating}</div>
+            <p className="text-xs text-muted-foreground">
+              +19% from last month
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active Now</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">+573</div>
+            <p className="text-xs text-muted-foreground">
+              +201 since last hour
+            </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Revenue Chart */}
+      <Tabs defaultValue="revenue" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="revenue" className=''>Revenue</TabsTrigger>
+          <TabsTrigger value="services">Services</TabsTrigger>
+          <TabsTrigger value="satisfaction">Satisfaction</TabsTrigger>
+          <TabsTrigger value="feedback">Feedback</TabsTrigger>
+        </TabsList>
+        <TabsContent value="revenue" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Monthly Revenue</CardTitle>
+            </CardHeader>
+            <CardContent className="h-[400px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={revenueData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="revenue" fill="#3b82f6" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="services" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Popular Services</CardTitle>
+            </CardHeader>
+            <CardContent className="h-[400px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={popularServices} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis type="number" />
+                  <YAxis dataKey="name" type="category" />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="count" fill="#10b981" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="satisfaction" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Customer Satisfaction</CardTitle>
+            </CardHeader>
+            <CardContent className="h-[400px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={customerSatisfaction || []} // Ensure it's an empty array if null
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  >
+                    {customerSatisfaction && customerSatisfaction.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="feedback" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Feedback</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {feedbackData.length > 0 ? ( // Check if feedbackData has items
+                feedbackData.map((feedback, index) => (
+                  <div key={index} className="mb-4 p-4 border rounded-lg">
+                    <div className="flex justify-between items-center mb-2">
+                      <p className="font-semibold">Customer Feedback</p>
+                      <div className="flex items-center">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} className={`h-4 w-4 ${i < feedback.rating ? 'text-yellow-400' : 'text-gray-300'}`} />
+                        ))}
+                      </div>
+                    </div>
+                    <p className="text-gray-600">{feedback.comment}</p>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-500">No feedback available.</p> // Message if no feedback
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
       <Card>
-        <CardHeader>
-          <CardTitle>Monthly Revenue</CardTitle>
-        </CardHeader>
-        <CardContent className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={revenueData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="revenue" fill="#8884d8" />
-            </BarChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
-
-      {/* Popular Services Chart */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Popular Services</CardTitle>
-        </CardHeader>
-        <CardContent className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={popularServices} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="number" />
-              <YAxis dataKey="name" type="category" />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="count" fill="#82ca9d" />
-            </BarChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
-
-      {/* Customer Satisfaction Chart */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Customer Satisfaction</CardTitle>
-        </CardHeader>
-        <CardContent className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={customerSatisfaction}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="value"
-                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-              >
-                {customerSatisfaction.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
-
-      {/* Feedback Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Customer Feedback</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {feedbackData.map((feedback, index) => (
-            <div key={index} className="mb-2">
-              <p><strong>Comment:</strong> {feedback.comment}</p>
-              <p><strong>Rating:</strong> {feedback.rating} / 5</p>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
-      {/* Service Trends Chart */}
-      {/* <Card>
-        <CardHeader>
-          <CardTitle>Service Trends Over Time</CardTitle>
-        </CardHeader>
-        <CardContent className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={serviceTrends}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              {serviceTrends.map(serviceTrend => (
-                <Line key={serviceTrend.service} type="monotone" dataKey="count" stroke="#82ca9d" />
-              ))}
-            </LineChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card> */}
-
-<Card>
   <CardHeader>
     <CardTitle>Service Trends Over Time</CardTitle>
   </CardHeader>
@@ -315,7 +316,6 @@ const generateServiceTrendsData = (bookings) => {
     </ResponsiveContainer>
   </CardContent>
 </Card>
-
     </div>
-  );
+  )
 }

@@ -1,10 +1,7 @@
-
-// import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useState } from 'react';
-import { useRouter } from 'next/router'; // Import useRouter for redirection
-
+import { useRouter } from 'next/router';
 import { useAuth } from '@/context/AuthContext';
 
 const Login = () => {
@@ -13,16 +10,16 @@ const Login = () => {
     username: '',
     email: '',
     password: '',
-    role: 'customer' // Default role
+    role: 'customer',
   });
 
-  const router = useRouter(); // Initialize useRouter
+  const router = useRouter();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: value
+      [name]: value,
     });
   };
 
@@ -44,14 +41,11 @@ const Login = () => {
       const data = await response.json();
       console.log('Login successful:', data);
       login(data);
-      // Redirect to the dashboard on successful login
-      // router.push('/login');
-      // In your login.js file
+
       if (data?.role === 'customer') {
-        router.push('/home'); // Redirect to personal info page
-        router.push('/home'); // Redirect to personal info page
+        router.push('/home');
       } else if (data?.role === 'vendor') {
-        router.push('/home'); // Redirect to vendor info page (create this page similarly)
+        router.push('/home');
       }
     } catch (error) {
       console.error('Error:', error);
@@ -60,13 +54,24 @@ const Login = () => {
   };
 
   return (
-    <div className='flex flex-col items-center justify-center h-screen bg-cover bg-center ' style={{ backgroundImage: "url('/assets/Login.png')" }}>
-      <div className="flex flex-col items-center justify-center w-full h-full bg-white bg-opacity-70 p-8 rounded-lg shadow-lg">
-        <div className="flex justify-center">
-          {/* <Image className="w-auto h-20 mb-4" src="/assets/Nav-logo.png" alt="Logo" width={100} height={100} /> */}
+    <div className="relative flex items-center justify-center h-screen bg-cover bg-center">
+      {/* Background video */}
+      <video
+        className="absolute top-0 left-0 w-full h-full object-cover z-0"
+        src="/assets/login.mp4"
+        autoPlay
+        loop
+        muted
+      />
+      {/* Semi-transparent overlay */}
+      <div className="absolute top-0 left-0 w-full h-full bg-black opacity-50 z-0"></div>
+
+      <div className="relative z-10 flex flex-col items-center justify-center w-full h-full bg-white bg-opacity-80 p-8 rounded-lg shadow-lg max-w-md">
+        <div className="flex justify-center mb-4">
+          {/* Add a logo if needed */}
         </div>
 
-        <p className="text-3xl text-center font-extrabold text-blue-800 mb-6">
+        <p className="text-4xl text-center font-extrabold text-blue-800 mb-6">
           Home Ease
         </p>
 
@@ -74,38 +79,84 @@ const Login = () => {
           Welcome back!
         </p>
 
-        <form onSubmit={handleSubmit} className="w-full max-w-md">
+        <form onSubmit={handleSubmit} className="w-full">
           <div className="mb-4">
-            <label className="block mb-2 text-sm font-medium text-black" htmlFor="username">Username</label>
-            <input id="username" name="username" value={formData.username} onChange={handleChange} className="block w-full px-4 py-2 text-black bg-white border rounded-lg focus:border-blue-400 focus:ring-opacity-40 focus:outline-none focus:ring focus:ring-blue-300" type="text" />
+            <label className="block mb-2 text-sm font-medium text-black" htmlFor="username">
+              Username
+            </label>
+            <input
+              id="username"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              className="block w-full px-4 py-3 text-black bg-white border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-300 focus:outline-none transition duration-300"
+              type="text"
+            />
           </div>
+
           <div className="mb-4">
-            <label className="block mb-2 text-sm font-medium text-black" htmlFor="email">Email Address</label>
-            <input id="email" name="email" value={formData.email} onChange={handleChange} className="block w-full px-4 py-2 text-black bg-white border rounded-lg focus:border-blue-400 focus:ring-opacity-40 focus:outline-none focus:ring focus:ring-blue-300" type="email" />
+            <label className="block mb-2 text-sm font-medium text-black" htmlFor="email">
+              Email Address
+            </label>
+            <input
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className="block w-full px-4 py-3 text-black bg-white border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-300 focus:outline-none transition duration-300"
+              type="email"
+            />
           </div>
+
           <div className="mb-4">
-            <label className="block mb-2 text-sm font-medium text-black" htmlFor="password">Password</label>
-            <input id="password" name="password" value={formData.password} onChange={handleChange} className="block w-full px-4 py-2 text-black bg-white border rounded-lg focus:border-blue-400 focus:ring-opacity-40 focus:outline-none focus:ring focus:ring-blue-300" type="password" />
+            <label className="block mb-2 text-sm font-medium text-black" htmlFor="password">
+              Password
+            </label>
+            <input
+              id="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              className="block w-full px-4 py-3 text-black bg-white border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-300 focus:outline-none transition duration-300"
+              type="password"
+            />
           </div>
+
           <div className="mb-4">
-            <label className="block mb-2 text-sm font-medium text-black" htmlFor="role">Role</label>
-            <select id="role" name="role" value={formData.role} onChange={handleChange} className="block w-full px-4 py-2 text-black bg-white border rounded-lg focus:border-blue-400 focus:ring-opacity-40 focus:outline-none focus:ring focus:ring-blue-300">
+            <label className="block mb-2 text-sm font-medium text-black" htmlFor="role">
+              Role
+            </label>
+            <select
+              id="role"
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+              className="block w-full px-4 py-3 text-black bg-white border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-300 focus:outline-none transition duration-300"
+            >
               <option value="customer">User</option>
               <option value="vendor">Business</option>
             </select>
           </div>
+
           <div className="mt-6">
-            <input type='submit' placeholder='Login' value="Login" className="w-full px-6 py-3 text-sm font-medium tracking-wide text-white capitalize transition-colors duration-300 transform bg-blue-700 rounded-lg hover:bg-blue-300 focus:outline-none focus:ring focus:ring-gray-300 focus:ring-opacity-50" />
+            <input
+              type="submit"
+              placeholder="Login"
+              value="Login"
+              className="w-full px-6 py-3 text-lg font-medium tracking-wide text-white capitalize transition-colors duration-300 transform bg-blue-700 rounded-lg hover:bg-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-300 focus:ring-opacity-50"
+            />
           </div>
         </form>
+
         <div className="flex gap-2 mt-4 items-center">
-          <h1 className="text-black">Don{"'"}t have an account?</h1>
-          <Link href="/signup" className="text-md text-gray-700 hover:underline font-semibold">Create One!</Link>
+          <h1 className="text-black">Don't have an account?</h1>
+          <Link href="/signup" className="text-md text-blue-700 hover:underline font-semibold">
+            Create One!
+          </Link>
         </div>
-        {/* {errorMessage && <p className="text-red-500">{errorMessage}</p>} */}
       </div>
     </div>
   );
-}
+};
 
 export default Login;

@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useAuth } from '@/context/AuthContext';
 import { Loader } from '@googlemaps/js-api-loader';
+import ChatModal from '@/components/ChatModal';
 
 export default function BookedServices() {
   const router = useRouter();
@@ -150,6 +151,7 @@ export default function BookedServices() {
   };
 
   const ServiceCard = ({ service, vendorName, isSpecial }) => {
+    const [isChatOpen, setIsChatOpen] = useState(false);
     // Determine the card color based on the service status
     const cardColor = service.status === 'Completed'
       ? 'bg-green-100'
@@ -158,6 +160,7 @@ export default function BookedServices() {
       : 'bg-blue-100'; // For 'Scheduled' or other statuses
   
     return (
+      <>
       <Card className={`shadow-lg hover:shadow-xl transition-shadow duration-300 transform hover:scale-105 ${cardColor} relative overflow-hidden`}>
       {isSpecial && (
         <div className="absolute top-0 left-0 w-24 h-24 overflow-hidden">
@@ -185,17 +188,34 @@ export default function BookedServices() {
           <Badge variant={service.status === 'Completed' ? 'secondary' : 'default'}>
             {service.status}
           </Badge>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="outline">View Details</Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] bg-white">
-              <ServiceDetailsModal service={service} customerId={customerId} />
-            </DialogContent>
-          </Dialog>
+          <div className="flex gap-2">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline">View Details</Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px] bg-white">
+                <ServiceDetailsModal service={service} customerId={customerId} />
+              </DialogContent>
+            </Dialog>
+            <Button
+              variant="default"
+              onClick={() => setIsChatOpen(true)}
+            >
+              <MessageCircle className="mr-2 h-4 w-4" />
+              Chat
+            </Button>
+          </div>
         </CardFooter>
       </Card>
-    );  
+      <ChatModal
+        isOpen={isChatOpen}
+        onClose={() => setIsChatOpen(false)}
+        bookingId={service._id}
+        vendorId={service.vendor.userId}
+        customerId={customerId}
+      />
+      </>
+    );
   };
 
   const ServiceDetailsModal = ({ service, customerId }) => {

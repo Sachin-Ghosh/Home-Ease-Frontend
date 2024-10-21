@@ -25,13 +25,16 @@ export default function AboutPage() {
           </button>
               </div>
               <div className="md:w-1/2">
-                <Image
-                  src="/placeholder.svg?height=400&width=600"
-                  alt="Home Services"
-                  width={600}
-                  height={400}
-                  className="rounded-lg shadow-lg"
-                />
+              <video
+          src="/assets/about.mp4"  // Use correct relative path
+          width={600}
+          height={400}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="rounded-lg shadow-xl"
+        />
               </div>
             </div>
           </div>
