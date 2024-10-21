@@ -345,6 +345,7 @@ return (
             value={selectedService?.category?._id || selectedService?.category || ''}
             onChange={(e) => setSelectedService({...selectedService, category: e.target.value})}
             required
+            className='bg-white'
           >
             <option value="">Select Category</option>
             {categories.map(category => (
@@ -359,6 +360,7 @@ return (
             value={selectedService?.subcategory?._id || selectedService?.subcategory || ''}
             onChange={(e) => setSelectedService({...selectedService, subcategory: e.target.value})}
             required
+            className='bg-white'
           >
             <option value="">Select Subcategory</option>
             {categories
