@@ -1,23 +1,36 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Camera, MapPin, Send, X, Image as ImageIcon, Loader2 } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
+import { Camera, MapPin, Send, X, Image as ImageIcon, Loader2 } from 'lucide-react'
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import { toast } from 'sonner'
+import { useAuth } from '@/context/AuthContext'
+import { useEffect, useRef, useState } from 'react'
 
-const ChatModal = ({ isOpen, onClose, bookingId, vendorId, customerId }) => {
-  const { token, authUser } = useAuth();
-  const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState('');
-  const [chatId, setChatId] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [isImageUploading, setIsImageUploading] = useState(false);
-  const [currentUserRole, setCurrentUserRole] = useState(null);
-  const messagesEndRef = useRef(null);
-  const ws = useRef(null);
+export default function ChatModal({ isOpen, onClose, bookingId, vendorId, customerId }) {
+  const { token, authUser } = useAuth()
+  const [messages, setMessages] = useState([])
+  const [newMessage, setNewMessage] = useState('')
+  const [chatId, setChatId] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [selectedImage, setSelectedImage] = useState(null)
+  const [isImageUploading, setIsImageUploading] = useState(false)
+  const [currentUserRole, setCurrentUserRole] = useState(null)
+  const messagesEndRef = useRef(null)
+  const ws = useRef(null)
+
 
   console.log(currentUserRole)
 
@@ -254,87 +267,73 @@ const handleSendMessage = async () => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px] h-[600px] flex flex-col p-0">
-        <DialogHeader className="p-4 border-b">
-          <DialogTitle>Chat with {currentUserRole === 'vendor' ? 'Customer' : 'Service Provider'}</DialogTitle>
+        <DialogHeader className="p-4 border-b bg-blue-50">
+          <DialogTitle className="text-blue-700">Chat with {currentUserRole === 'vendor' ? 'Customer' : 'Service Provider'}</DialogTitle>
         </DialogHeader>
 
-        {error && (
-          <Alert variant="destructive" className="m-4">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <ScrollArea className="flex-1 p-4 bg-white">
           {isLoading ? (
             <div className="flex justify-center items-center h-full">
-              <Loader2 className="h-8 w-8 animate-spin" />
+              <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
             </div>
           ) : (
             messages.map((msg, index) => {
-              const isCurrentUser = msg.sender === authUser._id;
+              const isCurrentUser = msg.sender === authUser._id
               return (
                 <div
                   key={index}
-                  className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
+                  className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'} mb-4`}
                 >
-                  <div className={`flex flex-col max-w-[70%] ${isCurrentUser ? 'items-end' : 'items-start'}`}>
-                    <div 
-                      className={`flex items-center gap-2 text-xs text-gray-500 mb-1`}
-                    >
-                      <span className={`${isCurrentUser ? 'order-1' : 'order-2'}`}>
-                        {formatTime(msg.timestamp)}
-                      </span>
-                      <span 
-                        className={`px-1.5 py-0.5 rounded text-white ${
-                          isCurrentUser 
-                            ? 'bg-blue-500 order-2' 
-                            : 'bg-gray-500 order-1'
+                  <div className={`flex ${isCurrentUser ? 'flex-row-reverse' : 'flex-row'} items-end`}>
+                    <Avatar className="w-8 h-8">
+                      <AvatarFallback>{isCurrentUser ? (currentUserRole === 'vendor' ? 'V' : 'C') : (currentUserRole === 'vendor' ? 'C' : 'V')}</AvatarFallback>
+                    </Avatar>
+                    <div className={`max-w-[70%] ${isCurrentUser ? 'mr-2' : 'ml-2'}`}>
+                      <div 
+                        className={`p-3 rounded-lg ${
+                          isCurrentUser
+                            ? 'bg-blue-500 text-white'
+                            : 'bg-gray-100 text-gray-900'
                         }`}
                       >
-                        {isCurrentUser ? (currentUserRole === 'vendor' ? 'V' : 'C') : (currentUserRole === 'vendor' ? 'C' : 'V')}
-                      </span>
-                    </div>
-                    <div
-                      className={`p-3 rounded-lg ${
-                        isCurrentUser
-                          ? 'bg-blue-500 text-white'
-                          : 'bg-gray-100 text-gray-900'
-                      }`}
-                    >
-                      {msg.imageUrl && (
-                        <img
-                          src={msg.imageUrl}
-                          alt="Shared image"
-                          className="max-w-full rounded-lg mb-2"
-                        />
-                      )}
-                      {msg.location && (
-                        <div className="flex items-center text-sm">
-                          <MapPin className="h-4 w-4 mr-1" />
-                          <a
-                            href={`https://www.google.com/maps?q=${msg.location.coordinates[1]},${msg.location.coordinates[0]}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="underline"
-                          >
-                            View Location
-                          </a>
-                        </div>
-                      )}
-                      {msg.message}
+                        {msg.imageUrl && (
+                          <img
+                            src={msg.imageUrl}
+                            alt="Shared image"
+                            className="max-w-full rounded-lg mb-2"
+                          />
+                        )}
+                        {msg.location && (
+                          <div className="flex items-center text-sm mb-1">
+                            <MapPin className="h-4 w-4 mr-1" />
+                            <a
+                              href={`https://www.google.com/maps?q=${msg.location.coordinates[1]},${msg.location.coordinates[0]}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="underline"
+                            >
+                              View Location
+                            </a>
+                          </div>
+                        )}
+                        {msg.message}
+                      </div>
+                      <div className={`text-xs text-gray-500 mt-1 ${isCurrentUser ? 'text-right' : 'text-left'}`}>
+                        {formatTime(msg.timestamp)}
+                      </div>
                     </div>
                   </div>
                 </div>
-              );
+              )
             })
           )}
           <div ref={messagesEndRef} />
-        </div>
+        </ScrollArea>
 
         {selectedImage && (
-          <div className="px-4 py-2 border-t flex items-center gap-2">
-            <div className="flex items-center gap-2 bg-gray-100 p-2 rounded">
-              <ImageIcon className="h-4 w-4" />
+          <div className="px-4 py-2 border-t flex items-center gap-2 bg-gray-50">
+            <div className="flex items-center gap-2 bg-white p-2 rounded border">
+              <ImageIcon className="h-4 w-4 text-blue-500" />
               <span className="text-sm truncate">{selectedImage.name}</span>
             </div>
             <Button
@@ -347,7 +346,7 @@ const handleSendMessage = async () => {
           </div>
         )}
 
-        <div className="p-4 border-t mt-auto">
+        <div className="p-4 border-t mt-auto bg-white">
           <div className="flex gap-2">
             <input
               type="file"
@@ -356,31 +355,51 @@ const handleSendMessage = async () => {
               id="image-upload"
               onChange={handleImageSelect}
             />
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => document.getElementById('image-upload').click()}
-              disabled={isImageUploading}
-            >
-              <Camera className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleShareLocation}
-            >
-              <MapPin className="h-4 w-4" />
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => document.getElementById('image-upload').click()}
+                    disabled={isImageUploading}
+                  >
+                    <Camera className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Upload Image</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={handleShareLocation}
+                  >
+                    <MapPin className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Share Location</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             <Input
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               placeholder="Type your message..."
               onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
               disabled={isImageUploading}
+              className="flex-1"
             />
             <Button
               onClick={handleSendMessage}
               disabled={(!newMessage.trim() && !selectedImage) || isImageUploading}
+              className="bg-blue-500 hover:bg-blue-600 text-white"
             >
               {isImageUploading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -392,7 +411,5 @@ const handleSendMessage = async () => {
         </div>
       </DialogContent>
     </Dialog>
-  );
-};
-
-export default ChatModal;
+  )
+}
