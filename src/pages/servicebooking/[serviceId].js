@@ -782,7 +782,7 @@ export default function ServiceBooking() {
         <div>
           <h1 className="text-3xl font-bold mb-4">{serviceName}</h1>
           <Image
-src={`${process.env.API_URL}${photos}`}
+src={photos && photos.length > 0 ? `${process.env.API_URL}${photos[0].replace(/\\/g, '/')}` : '/ac-repair.jpg'}
             alt={serviceName}
             width={200}
             height={100}
