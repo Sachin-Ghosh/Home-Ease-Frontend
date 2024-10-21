@@ -276,7 +276,7 @@ const handleDeleteService = async (serviceId) => {
     toast.error(`Error deleting service: ${error.message}`);
   }
 };
-  
+
 
 return (
   <div className="w-screen mx-auto p-4 bg-white">
@@ -325,92 +325,81 @@ return (
         <h2 className="text-2xl font-semibold mb-4 text-blue-600">Add New Service</h2>
         <Card className="p-10">
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <Input
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <Input
                 name="name"
                 placeholder="Service Name"
                 value={newService.name}
                 onChange={handleInputChange}
                 required
-              />
-              <Textarea
+            />
+            <Textarea
                 name="description"
                 placeholder="Description"
                 value={newService.description}
                 onChange={handleInputChange}
                 required
-              />
-           <select
-            name="category"
-            value={selectedService?.category?._id || selectedService?.category || ''}
-            onChange={(e) => setSelectedService({...selectedService, category: e.target.value})}
-            required
-            className='bg-white'
-          >
-            <option value="">Select Category</option>
-            {categories.map(category => (
-              <option key={category._id} value={category._id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-
-          <select
-            name="subcategory"
-            value={selectedService?.subcategory?._id || selectedService?.subcategory || ''}
-            onChange={(e) => setSelectedService({...selectedService, subcategory: e.target.value})}
-            required
-            className='bg-white'
-          >
-            <option value="">Select Subcategory</option>
-            {categories
-              .find(cat => cat._id === (selectedService?.category?._id || selectedService?.category))
-              ?.subCategories.map(sub => (
-                <option key={sub._id} value={sub._id}>
-                  {sub.name}
+            />
+            <select
+                name="category"
+                value={newService.category}
+                onChange={handleInputChange}
+                required
+                className='bg-white'
+            >
+                <option value="" >Select Category</option>
+                {categories.map(category => (
+                <option key={category._id} value={category._id}>
+                    {category.name}
                 </option>
-              ))}
-          </select>
-              <Input
+                ))}
+            </select>
+
+            {/* Subcategory dropdown */}
+            <select
+                name="subcategory"
+                value={newService.subcategory}
+                onChange={handleInputChange}
+                className='bg-white'
+            >
+                <option value="" >Select Subcategory</option>
+                {categories
+                .find(cat => cat._id === newService.category)?.subCategories.map(sub => (
+                    <option key={sub._id} value={sub._id}>
+                    {sub.name}
+                    </option>
+                ))}
+            </select>
+
+            <Input
                 name="price"
                 type="number"
                 placeholder="Price"
                 value={newService.price}
                 onChange={handleInputChange}
                 required
-              />
-              <Input
+            />
+            <Input
                 name="duration"
                 type="number"
                 placeholder="Duration (minutes)"
                 value={newService.duration}
                 onChange={handleInputChange}
                 required
-              />
-              <div className="flex items-center space-x-2">
-                <Input
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  className="hidden"
-                  id="service-photos"
-                />
-                <Button 
-                  type="button"
-                  onClick={() => document.getElementById('service-photos').click()}
-                  className="bg-blue-500 hover:bg-blue-600 text-white"
-                >
-                  <Image className="w-4 h-4 mr-2" /> Upload Photos
-                </Button>
-                <span className="text-sm text-gray-500">
-                  {newService.photos.length} photo(s) selected
-                </span>
-              </div>
-              <Button type="submit" className="w-full bg-blue-500 hover:bg-blue-600 text-white">
-                <Plus className="w-4 h-4 mr-2" /> Add Service
-              </Button>
+            />
+            
+            {/* Photo upload */}
+            <Input
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={handleFileChange}
+            />
+            
+            <Button  type="submit" className="bg-blue-600">Add Service</Button>
             </form>
+
+
           </CardContent>
         </Card>
       </div>
