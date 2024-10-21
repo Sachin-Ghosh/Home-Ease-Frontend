@@ -130,7 +130,7 @@ const Navbar = () => {
 
         {/* If logged in, show profile dropdown */}
         {token && (
-          <div className="dropdown dropdown-end">
+          <div className="dropdown dropdown-end ">
             <div
               tabIndex={0}
               role="button"
@@ -138,7 +138,7 @@ const Navbar = () => {
             >
               <PiUser size={28} className="text-blue-600" />
             </div>
-            <ul className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-white rounded-box w-52">
+            <ul className="mt-3  p-2 shadow menu menu-sm dropdown-content bg-white rounded-box w-52 z-10">
               {/* Conditional profile link based on user's role */}
               <li>
                 <Link href={authUser?.role === "customer" ? "/profile" : "/vendor-profile"} className="text-blue-600 hover:text-gray-300">
