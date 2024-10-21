@@ -41,7 +41,7 @@ const Navbar = () => {
         async (position) => {
           const { latitude, longitude } = position.coords;
           // Reverse geocode to get the location name
-          const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`);
+          const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=19.357059&longitude=72.906892&localityLanguage=en`);
           const data = await response.json();
           setLocationName(data.locality || "Location not found");
         },
