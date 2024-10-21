@@ -1,14 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { useAuth } from '@/context/AuthContext';
-import { useRouter } from 'next/router';
-import { Avatar } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { FaUpload } from "react-icons/fa";
-import Image from 'next/image';
-import { toast } from 'sonner';
+import React, { useEffect, useState } from 'react'
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { toast } from 'sonner'
+import { Camera, MapPin, Phone, Mail, User, Save } from 'lucide-react'
+import { useAuth } from '@/context/AuthContext'
+import { useRouter } from 'next/router'
+import Image from 'next/image'
 
 export default function VendorProfile() {
   const router = useRouter();
@@ -135,99 +137,148 @@ export default function VendorProfile() {
 };
 
 
-  if (loading) return <div>Loading...</div>;
+return (
+  <div className="w-screen h-full mx-auto p-4 space-y-6 bg-white">
+    <Card className="overflow-hidden">
+      <div className="relative h-48 bg-gradient-to-r from-blue-500 to-blue-600">
+        <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/50 to-transparent">
+          <h1 className="text-3xl font-bold text-white">{formData.name}</h1>
+          <p className="text-xl text-white/80">{formData.email}</p>
+        </div>
+      </div>
+      <CardContent className="p-6">
+        <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
+        <Avatar className="w-32 h-32">
+          <Image
+            src={vendor.profilePicture ? 
+                `${process.env.API_URL}${vendor.profilePicture.replace(/\\/g, '/')}` : 
+                "/assets/user-photo.jpg"} 
+            alt="Profile picture"
+            height={1000}
+            width={1000}
+            layout="responsive" // Optional: Use layout prop for responsive images
+          />
+        </Avatar>
+          <div className="space-y-2 text-center md:text-left">
+            <p className="text-lg text-gray-600 flex items-center justify-center md:justify-start">
+              <MapPin className="mr-2 h-5 w-5 text-blue-500" />
+              {formData.location.coordinates.join(', ')}
+            </p>
+            <p className="text-lg text-gray-600 flex items-center justify-center md:justify-start">
+              <Phone className="mr-2 h-5 w-5 text-blue-500" />
+              {formData.phone}
+            </p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
 
-  return (
-    <div className="container mx-auto p-4 space-y-6">
-      <Card>
-        <div className="p-6">
-          <div className="flex flex-col md:flex-row gap-6">
-            <Avatar className="w-32 h-32">
-              <Image
-                src={vendor.profilePicture ? 
-                    `${process.env.API_URL}${vendor.profilePicture.replace(/\\/g, '/')}` : 
-                    "/assets/user-photo.jpg"} 
-                alt="Profile picture"
-                height={1000}
-                width={1000}
-              />
-            </Avatar>
-            <div className="space-y-2">
-              {isEditing ? (
+    <Tabs defaultValue="profile" className="space-y-4">
+      <TabsList>
+        <TabsTrigger value="profile">Profile</TabsTrigger>
+        <TabsTrigger value="edit">Edit Profile</TabsTrigger>
+      </TabsList>
+      <TabsContent value="profile">
+        <Card>
+          <CardHeader>
+            <CardTitle>Profile Summary</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-600">{formData.bio || "No summary available"}</p>
+          </CardContent>
+        </Card>
+      </TabsContent>
+      <TabsContent value="edit">
+        <Card>
+          <CardHeader>
+            <CardTitle>Edit Profile</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Name</Label>
                 <Input
+                  id="name"
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  placeholder="Name"
+                  placeholder="Your Name"
                 />
-              ) : (
-                <h1 className="text-3xl font-bold">{formData.name}</h1>
-              )}
-              {isEditing ? (
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
                 <Input
+                  id="email"
                   name="email"
                   type="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  placeholder="Email"
+                  placeholder="your.email@example.com"
                 />
-              ) : (
-                <p className="text-xl text-muted-foreground">{formData.email}</p>
-              )}
-              {isEditing ? (
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone</Label>
                 <Input
+                  id="phone"
                   name="phone"
                   value={formData.phone}
                   onChange={handleInputChange}
-                  placeholder="Phone"
+                  placeholder="Your Phone Number"
                 />
-              ) : (
-                <p className="text-xl text-muted-foreground">{formData.phone}</p>
-              )}
-              <Button onClick={() => setIsEditing(!isEditing)}>
-                {isEditing ? 'Cancel' : 'Edit Profile'}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="bio">Bio</Label>
+                <Textarea
+                  id="bio"
+                  name="bio"
+                  value={formData.bio}
+                  onChange={handleInputChange}
+                  placeholder="Tell us about yourself"
+                  rows={4}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="longitude">Longitude</Label>
+                <Input
+                  id="longitude"
+                  name="longitude"
+                  type="number"
+                  value={formData.location.coordinates[0]}
+                  onChange={handleLocationChange}
+                  placeholder="Longitude"
+                  step="any"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="latitude">Latitude</Label>
+                <Input
+                  id="latitude"
+                  name="latitude"
+                  type="number"
+                  value={formData.location.coordinates[1]}
+                  onChange={handleLocationChange}
+                  placeholder="Latitude"
+                  step="any"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="profilePicture">Profile Picture</Label>
+                <Input
+                  id="profilePicture"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                />
+              </div>
+              <Button type="submit" className="w-full bg-blue-500 hover:bg-blue-600 text-white">
+                <Save className="mr-2 h-4 w-4" /> Save Changes
               </Button>
-            </div>
-          </div>
-        </div>
-      </Card>
-
-      <form onSubmit={handleSubmit}>
-        <Card>
-          <div>
-            <h2 className="text-2xl font-bold p-6">Profile Summary</h2>
-          </div>
-          <div className="p-6">
-            {isEditing ? (
-              <Textarea
-                name="bio"
-                value={formData.bio || ''}
-                onChange={handleInputChange}
-                placeholder="Tell us about yourself"
-              />
-            ) : (
-              <p>{formData.bio || "No summary available"}</p>
-            )}
-          </div>
+            </form>
+          </CardContent>
         </Card>
-
-        <Card>
-          <div>
-            <h2 className="text-2xl font-bold p-6">Upload Profile Picture</h2>
-          </div>
-          <div className="p-6">
-            <Input type="file" accept="image/*" onChange={handleFileChange} />
-            <Button type="submit" className="mt-4 flex items-center">
-              <FaUpload className="mr-2" />
-              Upload
-            </Button>
-          </div>
-        </Card>
-
-        {isEditing && (
-          <Button type="submit" className="mt-4">Save Changes</Button>
-        )}
-      </form>
-    </div>
-  );
+      </TabsContent>
+    </Tabs>
+  </div>
+)
 }

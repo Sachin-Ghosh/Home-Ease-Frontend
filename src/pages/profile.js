@@ -33,7 +33,6 @@ export default function ProfilePage() {
       });
       if (!response.ok) throw new Error('Failed to fetch profile');
       const data = await response.json();
-      console.log(data);
       setProfile(data);
       setLoading(false);
     } catch (error) {

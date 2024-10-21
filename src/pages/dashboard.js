@@ -280,6 +280,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
+import { ArrowRight, Calendar, Edit, Settings } from 'lucide-react';
 
 export default function VendorDashboard() {
   const { token, authUser } = useAuth();
@@ -380,63 +381,76 @@ export default function VendorDashboard() {
     { name: 'Scheduled', value: scheduledBookings },
   ];
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042']
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Vendor Dashboard</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-        <Card>
+    <div className="w-screen mx-auto p-4 bg-white">
+      <h1 className="text-3xl font-bold mb-6 text-blue-600">Vendor Dashboard</h1>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <Card className="bg-blue-50 border-blue-200">
           <CardHeader>
-            <CardTitle>Profile</CardTitle>
+            <CardTitle className="text-blue-600">Profile</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>Name: {vendorData.userId.name}</p>
-            <p>Email: {vendorData.userId.email}</p>
-            <p>Total Services: {vendorData.services?.length || 0}</p>
-            <p>Rating: 4.3 / 5</p>
-            <Link href="/vendor-profile">
-              <Button className="mt-2">Edit Profile</Button>
-            </Link>
+            <div className="space-y-2">
+              <p><span className="font-semibold">Name:</span> {vendorData.userId.name}</p>
+              <p><span className="font-semibold">Email:</span> {vendorData.userId.email}</p>
+              <p><span className="font-semibold">Total Services:</span> {vendorData.services?.length || 0}</p>
+              <p><span className="font-semibold">Rating:</span> 4.3 / 5</p>
+              <Link href="/vendor-profile">
+                <Button className="mt-4 bg-blue-500 hover:bg-blue-600 text-white">
+                  Edit Profile <Edit className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-green-50 border-green-200">
           <CardHeader>
-            <CardTitle>Bookings Overview</CardTitle>
+            <CardTitle className="text-green-600">Bookings Overview</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>Total Bookings: {bookingsData.length}</p>
-            <p>Completed: {completedBookings}</p>
-            <p>Cancelled: {cancelledBookings}</p>
-            <p>Scheduled: {scheduledBookings}</p>
-            <Link href="/vendor-booking">
-              <Button className="mt-2">View Bookings</Button>
-            </Link>
+            <div className="space-y-2">
+              <p><span className="font-semibold">Total Bookings:</span> {bookingsData.length}</p>
+              <p><span className="font-semibold">Completed:</span> {completedBookings}</p>
+              <p><span className="font-semibold">Cancelled:</span> {cancelledBookings}</p>
+              <p><span className="font-semibold">Scheduled:</span> {scheduledBookings}</p>
+              <Link href="/vendor-booking">
+                <Button className="mt-4 bg-green-500 hover:bg-green-600 text-white">
+                  View Bookings <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-purple-50 border-purple-200">
           <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
+            <CardTitle className="text-purple-600">Quick Actions</CardTitle>
           </CardHeader>
-          <CardContent className="flex flex-col gap-2">
+          <CardContent className="flex flex-col gap-3">
             <Link href="/vendor-service">
-              <Button className="w-full">Manage Services</Button>
+              <Button className="w-full bg-purple-500 hover:bg-purple-600 text-white">
+                Manage Services <Settings className="ml-2 h-4 w-4" />
+              </Button>
             </Link>
             <Link href="/schedule">
-              <Button className="w-full">Update Schedule</Button>
+              <Button className="w-full bg-purple-500 hover:bg-purple-600 text-white">
+                Update Schedule <Calendar className="ml-2 h-4 w-4" />
+              </Button>
             </Link>
             <Link href="/vendor-analytics">
-              <Button className="w-full">View Detailed Analytics</Button>
+              <Button className="w-full bg-purple-500 hover:bg-purple-600 text-white">
+                View Detailed Analytics <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
             </Link>
           </CardContent>
         </Card>
       </div>
       
-      {/* Charts */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <Card>
           <CardHeader>
-            <CardTitle>Monthly Revenue</CardTitle>
+            <CardTitle className="text-blue-600">Monthly Revenue</CardTitle>
           </CardHeader>
           <CardContent className="h-80">
             <ResponsiveContainer width="100%" height="100%">
@@ -446,14 +460,14 @@ export default function VendorDashboard() {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="revenue" fill="#8884d8" />
+                <Bar dataKey="revenue" fill="#3B82F6" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Booking Status Distribution</CardTitle>
+            <CardTitle className="text-blue-600">Booking Status Distribution</CardTitle>
           </CardHeader>
           <CardContent className="h-80">
             <ResponsiveContainer width="100%" height="100%">
@@ -479,11 +493,10 @@ export default function VendorDashboard() {
         </Card>
       </div>
       
-      {/* Popular Services and Customer Satisfaction */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <Card>
           <CardHeader>
-            <CardTitle>Popular Services</CardTitle>
+            <CardTitle className="text-blue-600">Popular Services</CardTitle>
           </CardHeader>
           <CardContent className="h-80">
             <ResponsiveContainer width="100%" height="100%">
@@ -493,14 +506,14 @@ export default function VendorDashboard() {
                 <YAxis dataKey="name" type="category" />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="count" fill="#82ca9d" />
+                <Bar dataKey="count" fill="#10B981" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Customer Satisfaction</CardTitle>
+            <CardTitle className="text-blue-600">Customer Satisfaction</CardTitle>
           </CardHeader>
           <CardContent className="h-80">
             <ResponsiveContainer width="100%" height="100%">
@@ -526,34 +539,43 @@ export default function VendorDashboard() {
         </Card>
       </div>
       
-      {/* Recent Bookings Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Recent Bookings</CardTitle>
+          <CardTitle className="text-blue-600">Recent Bookings</CardTitle>
         </CardHeader>
         <CardContent>
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {bookingsData.slice(0, 5).map((booking, index) => (
-                <tr key={index}>
-                  <td className="px-6 py-4 whitespace-nowrap">{booking.service[0].name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{new Date(booking.createdAt).toLocaleDateString()}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{booking.status}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">₹{booking.service[0].price}</td>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {bookingsData.slice(0, 5).map((booking, index) => (
+                  <tr key={index} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">{booking.service[0].name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{new Date(booking.createdAt).toLocaleDateString()}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        booking.status === 'Completed' ? 'bg-green-100 text-green-800' :
+                        booking.status === 'Cancelled' ? 'bg-red-100 text-red-800' :
+                        'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {booking.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">₹{booking.service[0].price}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

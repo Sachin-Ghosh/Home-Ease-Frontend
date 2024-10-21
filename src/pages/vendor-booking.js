@@ -155,8 +155,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import VendorLocationTracker from '@/components/VendorLocationTracker';
-import { MessageSquare } from 'lucide-react';
+import { Calendar, Clock, DollarSign, MapPin, MessageSquare, Package, User } from 'lucide-react';
 import ChatModal from '@/components/ChatModal';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 
 export default function VendorBookings() {
   const router = useRouter();
@@ -172,6 +174,10 @@ export default function VendorBookings() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
   const [selectedBookingId, setSelectedBookingId] = useState(null);
+  const [filter, setFilter] = useState('all')
+  const [filteredBookings, setFilteredBookings] = useState([])
+
+
 
   useEffect(() => {
     if (authUser) {
@@ -184,6 +190,10 @@ export default function VendorBookings() {
       fetchBookings();
     }
   }, [vendorId]);
+
+  useEffect(() => {
+    filterBookings()
+  }, [bookings, filter])
 
   const fetchVendorInfo = async () => {
     try {
@@ -311,97 +321,131 @@ export default function VendorBookings() {
     setSelectedBookingId(null);
   };
   
+  const filterBookings = () => {
+    if (filter === 'all') {
+      setFilteredBookings(bookings)
+    } else {
+      setFilteredBookings(bookings.filter(booking => booking.status.toLowerCase() === filter))
+    }
+  }
   
-
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Your Bookings</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {bookings.map(booking => (
-          <Card key={booking._id}>
-            <CardHeader>
-              <CardTitle>Booking #{booking._id.slice(-6)}</CardTitle>
+    <div className="w-screen mx-auto p-4 bg-white">
+      <h1 className="text-3xl font-bold mb-6 text-blue-600">Your Bookings</h1>
+      <div className="mb-4">
+        <Select onValueChange={setFilter} defaultValue="all">
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Filter bookings" />
+          </SelectTrigger>
+          <SelectContent className="bg-white">
+            <SelectItem value="all">All Bookings</SelectItem>
+            <SelectItem value="scheduled">Scheduled</SelectItem>
+            <SelectItem value="completed">Completed</SelectItem>
+            <SelectItem value="cancelled">Cancelled</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredBookings.map(booking => (
+          <Card key={booking._id} className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <CardHeader className="bg-blue-50">
+              <CardTitle className="text-blue-600">Booking #{booking._id.slice(-6)}</CardTitle>
             </CardHeader>
-            <CardContent>
-              {/* Display customer name */}
-              <p>Customer: {customerNames[booking.customer?.userId] || 'Unknown'}</p>
-
-              {/* Display service name */}
-              <p>Service: {booking.service[0]?.name || 'Unknown'}</p>
-
-              {/* Display schedule date and time */}
-              <p>Date: {booking.slot?.startTime ? new Date(booking.slot.startTime).toLocaleDateString() : 'Unknown'}</p>
-              <p>Time: {booking.slot?.startTime ? `${new Date(booking.slot.startTime).toLocaleTimeString()} - ${new Date(booking.slot.endTime).toLocaleTimeString()}` : 'Unknown'}</p>
-
-              <p>Status: {booking.status}</p>
-
-              <div className="flex flex-wrap gap-2 mt-4">
-              {booking.status === 'Scheduled' && (
-                <div className="mt-2">
-                  <Button onClick={() => handleStatusChange(booking._id, 'Completed')} className="mr-2">
-                    Mark as Completed
-                  </Button>
-                  <Button onClick={() => handleStatusChange(booking._id, 'Cancelled')} variant="destructive">
-                    Cancel Booking
-                  </Button>
+            <CardContent className="p-6">
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <User className="text-blue-500" />
+                  <span>Customer: {customerNames[booking.customer?.userId] || 'Unknown'}</span>
                 </div>
-              )}
-              {/* Chat button */}
-              <Button 
-                  onClick={() => handleChatOpen(booking)}
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-2"
-                >
-                  <MessageSquare className="h-4 w-4" />
-                  Chat with Customer
-                </Button>
-
-                {/* Location tracking button */}
-                <Button 
-                  onClick={() => handleStartTracking(booking)} 
-                  size="sm"
-                >
-                  Start Tracking
-                </Button>
+                <div className="flex items-center space-x-2">
+                  <Package className="text-blue-500" />
+                  <span>Service: {booking.service[0]?.name || 'Unknown'}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Calendar className="text-blue-500" />
+                  <span>Date: {booking.slot?.startTime ? new Date(booking.slot.startTime).toLocaleDateString() : 'Unknown'}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Clock className="text-blue-500" />
+                  <span>Time: {booking.slot?.startTime ? `${new Date(booking.slot.startTime).toLocaleTimeString()} - ${new Date(booking.slot.endTime).toLocaleTimeString()}` : 'Unknown'}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <DollarSign className="text-blue-500" />
+                  <span>Payment Status: {booking.payment_status}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                    booking.status === 'Completed' ? 'bg-green-100 text-green-800' :
+                    booking.status === 'Cancelled' ? 'bg-red-100 text-red-800' :
+                    'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {booking.status}
+                  </span>
+                </div>
               </div>
 
-                <p>Payment Status: {booking.payment_status}</p>
-                
-                {booking.payment_status === 'Unpaid' && (
-                    <div className="mt-2">
-                    <select 
-                        onChange={(e) => handlePaymentStatusChange(booking._id, e.target.value)} 
-                        defaultValue="Unpaid"
-                    >
-                        <option value="Unpaid" disabled>Select Payment Status</option>
-                        <option value="Paid">Paid</option>
-                        <option value="Pending">Pending</option>
-                        <option value="Refunded">Refunded</option>
-                    </select>
-                    </div>
+              <div className="mt-6 space-y-4">
+                {booking.status === 'Scheduled' && (
+                  <div className="flex space-x-2">
+                    <Button onClick={() => handleStatusChange(booking._id, 'Completed')} className="bg-green-500 hover:bg-green-600 text-white">
+                      Mark as Completed
+                    </Button>
+                    <Button onClick={() => handleStatusChange(booking._id, 'Cancelled')} className="bg-red-500 hover:bg-red-600 text-white">
+                      Cancel Booking
+                    </Button>
+                  </div>
                 )}
+                <div className="flex space-x-2">
+                  <Button 
+                    onClick={() => handleChatOpen(booking)}
+                    variant="outline"
+                    className="flex items-center space-x-2 border-blue-500 text-blue-500 hover:bg-blue-50"
+                  >
+                    <MessageSquare className="h-4 w-4" />
+                    <span>Chat</span>
+                  </Button>
+                  <Button 
+                    onClick={() => handleStartTracking(booking)} 
+                    className="flex items-center space-x-2 bg-blue-500 hover:bg-blue-600 text-white"
+                  >
+                    <MapPin className="h-4 w-4" />
+                    <span>Track</span>
+                  </Button>
+                </div>
+                {booking.payment_status === 'Unpaid' && (
+                  <Select onValueChange={(value) => handlePaymentStatusChange(booking._id, value)}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Update Payment Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Paid">Paid</SelectItem>
+                      <SelectItem value="Pending">Pending</SelectItem>
+                      <SelectItem value="Refunded">Refunded</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
-              {/* // In your JSX, add this button to each booking card: */}
-              <Button onClick={() => handleStartTracking(booking)} className="mt-2">
-                Start Tracking
-              </Button>
+      {showLocationTracker && selectedBooking && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg w-3/4 h-3/4">
+            <h2 className="text-2xl font-bold mb-4 text-blue-600">Live Location Tracking</h2>
+            <VendorLocationTracker 
+              bookingId={selectedBooking._id} 
+              customerLocation={selectedBooking.customerLocation} 
+            />
+            <Button onClick={() => setShowLocationTracker(false)} className="mt-4 bg-blue-500 hover:bg-blue-600 text-white">
+              Close
+            </Button>
+          </div>
+        </div>
+      )}
 
-              {showLocationTracker && selectedBooking && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-    <div className="bg-white p-4 rounded-lg w-3/4 h-3/4">
-      <h2 className="text-xl font-bold mb-4">Live Location Tracking</h2>
-      <VendorLocationTracker 
-        bookingId={selectedBooking._id} 
-        customerLocation={selectedBooking.customerLocation} 
-      />
-      <Button onClick={() => setShowLocationTracker(false)} className="mt-4">
-        Close
-      </Button>
-    </div>
-  </div>
-)}
-{isChatOpen && selectedCustomerId && selectedBookingId && (
+      {isChatOpen && selectedCustomerId && selectedBookingId && (
         <ChatModal
           isOpen={isChatOpen}
           onClose={handleChatClose}
@@ -410,11 +454,6 @@ export default function VendorBookings() {
           customerId={selectedCustomerId}
         />
       )}
-
-            </CardContent>
-          </Card>
-        ))}
-      </div>
     </div>
-  );
+  )
 }

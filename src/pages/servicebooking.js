@@ -125,7 +125,7 @@ export default function ServiceBooking() {
           </div>
 
           {/* Payment Button */}
-          <Button className="w-96 mt-8 ml-44 bg-blue-500 text-white " >Pay Now</Button>
+          <Button className="w-96 mt-8 ml-44 bg-blue-500 text-white hover" >Pay Now</Button>
         </div>
       </div>
     </div>

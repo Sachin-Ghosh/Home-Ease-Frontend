@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Edit, Image, Plus, Trash2 } from 'lucide-react';
+import { Select,SelectContent, SelectItem, SelectTrigger, SelectValue } from '@radix-ui/react-select';
 
 
 export default function VendorServices() {
@@ -276,116 +278,148 @@ const handleDeleteService = async (serviceId) => {
 };
   
 
-  return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Manage Services</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <h2 className="text-xl font-semibold mb-2">Your Services</h2>
-          {services.length === 0 ? (
-                    <p className="text-gray-500">There are no services created by the vendor.</p>
-                ) : (
-                    services.map(service => (
-                        <Card key={service._id} className="mb-4">
-                            <CardHeader>
-                                <CardTitle>{service.name}</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <p>{service.description}</p>
-                                <p>Price: ₹{service.price}</p>
-                                <p>Duration: {service.duration} minutes</p>
-                                <div className="mt-2">
-                                  <Button onClick={() => {
-                                    setSelectedService(service);
-                                    setIsUpdateModalOpen(true);
-                                  }} className="mr-2">Update</Button>
-                                  <Button variant="destructive" onClick={() => handleDeleteService(service._id)}>Delete</Button>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))
-                )}
-        </div>
-        <div>
-          <h2 className="text-xl font-semibold mb-2">Add New Service</h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <Input
+return (
+  <div className="w-screen mx-auto p-4 bg-white">
+    <h1 className="text-3xl font-bold mb-6 text-blue-600">Manage Services</h1>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div>
+        <h2 className="text-2xl font-semibold mb-4 text-blue-600">Your Services</h2>
+        {services.length === 0 ? (
+          <p className="text-gray-500">You haven't created any services yet.</p>
+        ) : (
+          <div className="space-y-4">
+            {services.map(service => (
+              <Card key={service._id} className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
+                <CardHeader className="bg-blue-50">
+                  <CardTitle className="text-blue-600">{service.name}</CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <p className="text-gray-600 mb-2">{service.description}</p>
+                  <p className="font-semibold">Price: ₹{service.price}</p>
+                  <p className="font-semibold">Duration: {service.duration} minutes</p>
+                  <div className="mt-4 flex space-x-2">
+                    <Button 
+                      onClick={() => {
+                        setSelectedService(service)
+                        setIsUpdateModalOpen(true)
+                      }} 
+                      className="bg-blue-500 hover:bg-blue-600 text-white"
+                    >
+                      <Edit className="w-4 h-4 mr-2" /> Update
+                    </Button>
+                    <Button 
+                      variant="destructive" 
+                      onClick={() => handleDeleteService(service._id)}
+                      className="bg-red-500 hover:bg-red-600 text-white"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" /> Delete
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+      <div>
+        <h2 className="text-2xl font-semibold mb-4 text-blue-600">Add New Service</h2>
+        <Card className="p-10">
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <Input
                 name="name"
                 placeholder="Service Name"
                 value={newService.name}
                 onChange={handleInputChange}
                 required
-            />
-            <Textarea
+              />
+              <Textarea
                 name="description"
                 placeholder="Description"
                 value={newService.description}
                 onChange={handleInputChange}
                 required
-            />
-            <select
-                name="category"
-                value={newService.category}
-                onChange={handleInputChange}
-                required
-            >
-                <option value="">Select Category</option>
-                {categories.map(category => (
-                <option key={category._id} value={category._id}>
-                    {category.name}
+              />
+           <select
+            name="category"
+            value={selectedService?.category?._id || selectedService?.category || ''}
+            onChange={(e) => setSelectedService({...selectedService, category: e.target.value})}
+            required
+            className='bg-white'
+          >
+            <option value="">Select Category</option>
+            {categories.map(category => (
+              <option key={category._id} value={category._id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
+
+          <select
+            name="subcategory"
+            value={selectedService?.subcategory?._id || selectedService?.subcategory || ''}
+            onChange={(e) => setSelectedService({...selectedService, subcategory: e.target.value})}
+            required
+            className='bg-white'
+          >
+            <option value="">Select Subcategory</option>
+            {categories
+              .find(cat => cat._id === (selectedService?.category?._id || selectedService?.category))
+              ?.subCategories.map(sub => (
+                <option key={sub._id} value={sub._id}>
+                  {sub.name}
                 </option>
-                ))}
-            </select>
-
-            {/* Subcategory dropdown */}
-            <select
-                name="subcategory"
-                value={newService.subcategory}
-                onChange={handleInputChange}
-            >
-                <option value="">Select Subcategory</option>
-                {categories
-                .find(cat => cat._id === newService.category)?.subCategories.map(sub => (
-                    <option key={sub._id} value={sub._id}>
-                    {sub.name}
-                    </option>
-                ))}
-            </select>
-
-            <Input
+              ))}
+          </select>
+              <Input
                 name="price"
                 type="number"
                 placeholder="Price"
                 value={newService.price}
                 onChange={handleInputChange}
                 required
-            />
-            <Input
+              />
+              <Input
                 name="duration"
                 type="number"
                 placeholder="Duration (minutes)"
                 value={newService.duration}
                 onChange={handleInputChange}
                 required
-            />
-            
-            {/* Photo upload */}
-            <Input
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={handleFileChange}
-            />
-            
-            <Button  type="submit">Add Service</Button>
+              />
+              <div className="flex items-center space-x-2">
+                <Input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                  id="service-photos"
+                />
+                <Button 
+                  type="button"
+                  onClick={() => document.getElementById('service-photos').click()}
+                  className="bg-blue-500 hover:bg-blue-600 text-white"
+                >
+                  <Image className="w-4 h-4 mr-2" /> Upload Photos
+                </Button>
+                <span className="text-sm text-gray-500">
+                  {newService.photos.length} photo(s) selected
+                </span>
+              </div>
+              <Button type="submit" className="w-full bg-blue-500 hover:bg-blue-600 text-white">
+                <Plus className="w-4 h-4 mr-2" /> Add Service
+              </Button>
             </form>
-
-        </div>
+          </CardContent>
+        </Card>
       </div>
-      <Dialog open={isUpdateModalOpen} onOpenChange={setIsUpdateModalOpen}>
-      <DialogContent>
+    </div>
+
+    <Dialog open={isUpdateModalOpen} onOpenChange={setIsUpdateModalOpen}>
+      <DialogContent className="sm:max-w-[425px] bg-white">
         <DialogHeader>
-          <DialogTitle>Update Service</DialogTitle>
+          <DialogTitle className="text-blue-600">Update Service</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleUpdateService} className="space-y-4">
           <Input
@@ -418,70 +452,96 @@ const handleDeleteService = async (serviceId) => {
             onChange={(e) => setSelectedService({...selectedService, duration: e.target.value})}
             required
           />
-          <Input
-            type="file"
-            multiple
-            accept="image/*"
-            onChange={(e) => {
-              const newPhotos = Array.from(e.target.files);
-              setSelectedService(prev => ({
-                ...prev,
-                photos: [...(prev.photos || []), ...newPhotos]
-              }));
-            }}
-          />
-          <select
-            name="category"
-            value={selectedService?.category?._id || selectedService?.category || ''}
-            onChange={(e) => setSelectedService({...selectedService, category: e.target.value})}
-            required
+          <Select 
+            name="category" 
+            onValueChange={(value) => setSelectedService({...selectedService, category: value})}
+            defaultValue={selectedService?.category?._id || selectedService?.category}
           >
-            <option value="">Select Category</option>
-            {categories.map(category => (
-              <option key={category._id} value={category._id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-
-          <select
-            name="subcategory"
-            value={selectedService?.subcategory?._id || selectedService?.subcategory || ''}
-            onChange={(e) => setSelectedService({...selectedService, subcategory: e.target.value})}
-            required
-          >
-            <option value="">Select Subcategory</option>
-            {categories
-              .find(cat => cat._id === (selectedService?.category?._id || selectedService?.category))
-              ?.subCategories.map(sub => (
-                <option key={sub._id} value={sub._id}>
-                  {sub.name}
-                </option>
+            <SelectTrigger>
+              <SelectValue placeholder="Select Category" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map(category => (
+                <SelectItem key={category._id} value={category._id}>
+                  {category.name}
+                </SelectItem>
               ))}
-          </select>
-
-          {selectedService?.photos && selectedService.photos.map((photo, index) => (
-            <div key={index} className="flex items-center">
-              <span>{typeof photo === 'string' ? photo : photo.name}</span>
-              <Button 
-                type="button" 
-                onClick={() => {
-                  setSelectedService(prev => ({
-                    ...prev,
-                    photos: prev.photos.filter((_, i) => i !== index)
-                  }));
-                }}
-              >
-                Remove
-              </Button>
+            </SelectContent>
+          </Select>
+          <Select 
+            name="subcategory" 
+            onValueChange={(value) => setSelectedService({...selectedService, subcategory: value})}
+            defaultValue={selectedService?.subcategory?._id || selectedService?.subcategory}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select Subcategory" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories
+                .find(cat => cat._id === (selectedService?.category?._id || selectedService?.category))
+                ?.subCategories.map(sub => (
+                  <SelectItem key={sub._id} value={sub._id}>
+                    {sub.name}
+                  </SelectItem>
+                ))}
+            </SelectContent>
+          </Select>
+          <div  className="flex items-center space-x-2">
+            <Input
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={(e) => {
+                const newPhotos = Array.from(e.target.files)
+                setSelectedService(prev => ({
+                  ...prev,
+                  photos: [...(prev.photos || []), ...newPhotos]
+                }))
+              }}
+              className="hidden"
+              id="update-service-photos"
+            />
+            <Button 
+              type="button"
+              onClick={() => document.getElementById('update-service-photos').click()}
+              className="bg-blue-500 hover:bg-blue-600 text-white"
+            >
+              <Image className="w-4 h-4 mr-2" /> Upload Photos
+            </Button>
+            <span className="text-sm text-gray-500">
+              {selectedService?.photos?.length || 0} photo(s) selected
+            </span>
+          </div>
+          {selectedService?.photos && (
+            <div className="space-y-2 " >
+              {selectedService.photos.map((photo, index) => (
+                <div key={index} className="flex items-center justify-between ">
+                  <span className="text-sm text-gray-600">
+                    {typeof photo === 'string' ? photo : photo.name}
+                  </span>
+                  <Button 
+                    type="button" 
+                    onClick={() => {
+                      setSelectedService(prev => ({
+                        ...prev,
+                        photos: prev.photos.filter((_, i) => i !== index)
+                      }))
+                    }}
+                    variant="destructive"
+                    size="sm"
+                  >
+                    Remove
+                  </Button>
+                </div>
+              ))}
             </div>
-          ))}
-          <Button type="submit">Update Service</Button>
+          )}
+          <Button type="submit" className="w-full bg-blue-500 hover:bg-blue-600 text-white">
+            Update Service
+          </Button>
         </form>
       </DialogContent>
     </Dialog>
-
-
-    </div>
-  );
+  </div>
+)
 }
