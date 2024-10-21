@@ -348,7 +348,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { GoogleMap, useJsApiLoader, MarkerF, OverlayView } from '@react-google-maps/api';
 
 const NearbyVendors = ({ services, vendorNames }) => {
-    const [userLocation, setUserLocation] = useState({ lat: 19.4585847, lng: 72.7946657 });
+    const [userLocation, setUserLocation] = useState({ lat: 19.357059, lng: 72.906892 });
     const [vendors, setVendors] = useState([]);
     const [selectedVendor, setSelectedVendor] = useState(null);
     const [directions, setDirections] = useState({});
@@ -392,17 +392,17 @@ const NearbyVendors = ({ services, vendorNames }) => {
     );
 
     useEffect(() => {
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const { latitude, longitude } = position.coords;
-                setUserLocation({ lat: latitude, lng: longitude });
-                console.log('User location set:', { lat: latitude, lng: longitude });
-            },
-            (error) => {
-                console.error('Error getting location:', error);
-                alert('Unable to get your location. Using default location.');
-            }
-        );
+        // navigator.geolocation.getCurrentPosition(
+        //     (position) => {
+        //         const { latitude, longitude } = position.coords;
+        //         setUserLocation({ lat: latitude, lng: longitude });
+        //         console.log('User location set:', { lat: latitude, lng: longitude });
+        //     },
+        //     (error) => {
+        //         console.error('Error getting location:', error);
+        //         alert('Unable to get your location. Using default location.');
+        //     }
+        // );
 
         const uniqueVendors = services.reduce((acc, service) => {
             const vendorId = typeof service.vendor === 'object' ? service.vendor._id : service.vendor;

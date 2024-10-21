@@ -230,7 +230,7 @@ const VendorPage = () => {
   }
 
   return (
-    <div className="w-screen h-screen mx-auto p-4 bg-white">
+    <div className="w-screen h-full mx-auto p-4 bg-white">
       <NearbyVendors vendorNames={vendorNames} services={services}/>
       <h1 className="text-3xl font-bold mb-6 text-blue-600">
         Services for {router.query.slug?.replace(/-/g, ' ')}
